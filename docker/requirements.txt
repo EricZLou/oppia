@@ -1,0 +1,8 @@
+Flask
+Redis
+curl
+python-setuptools
+git
+python-dev
+python-pip
+python-yaml
