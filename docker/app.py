@@ -1,3 +1,5 @@
+#! /usr/local/lib/python
+
 import time
 
 import redis
