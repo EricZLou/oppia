@@ -1,8 +1,12 @@
-version: '3'
+version: "3"
 services:
-  web:
-    build: .
+  oppia:
+    build:
+      context: ../.
+      dockerfile: ./docker/Dockerfile
     ports:
-     - "5000:5000"
-  redis:
-    image: "redis:alpine"
+      - "8181:8181"
+      - "8000:8000"
+    volumes:
+      - ..:/home/oppia/:rw
+    entrypoint: ["/home/oppia/scripts/start.sh"]
