@@ -3,10 +3,12 @@ services:
   oppia:
     build:
       context: ../.
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./docker/Dockerfile_e2e-tests
     ports:
       - "8181:8181"
       - "8000:8000"
+      - "9001:9001"
+      - "4444:4444"
     volumes:
       - ..:/home/oppia/:rw
-    entrypoint: ["/home/oppia/scripts/start.sh"]
+    entrypoint: ["/home/oppia/scripts/run_e2e_tests.sh"]

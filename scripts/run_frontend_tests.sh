@@ -51,6 +51,8 @@ export DEFAULT_SKIP_INSTALLING_THIRD_PARTY_LIBS=false
 export DEFAULT_RUN_MINIFIED_TESTS=false
 maybeInstallDependencies "$@"
 
+echo "LOLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+
 echo ""
 echo "  View interactive frontend test coverage reports by navigating to"
 echo ""

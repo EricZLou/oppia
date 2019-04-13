@@ -1,4 +1,0 @@
-Flask
-Redis
-setuptools
-pip

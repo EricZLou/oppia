@@ -22,4 +22,3 @@ COPY . /home/oppia/
 WORKDIR /home/oppia/
 RUN ls
 RUN bash scripts/install_prerequisites.sh
-# RUN bash scripts/start.sh
