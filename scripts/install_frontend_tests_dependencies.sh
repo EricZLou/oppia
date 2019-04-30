@@ -17,9 +17,12 @@
 set -e
 source $(dirname $0)/setup.sh || exit 1
 
-install_node_module jasmine-core 2.5.2
+# install_node_module jasmine-core 2.5.2
+install_node_module jasmine-core 3.3.0
 install_node_module karma 1.5.0
-install_node_module karma-jasmine 1.1.0
+# install_node_module karma 4.0.1
+# install_node_module karma-jasmine 1.1.0
+install_node_module karma-jasmine 2.0.1
 install_node_module karma-jasmine-jquery 0.1.1
 install_node_module karma-json-fixtures-preprocessor 0.0.6
 install_node_module karma-coverage 1.1.1
