@@ -85,7 +85,8 @@ module.exports = function(config) {
       subdir: '.',
       dir: '../karma_coverage_reports/'
     },
-    autoWatch: true,
+    logLevel: config.LOG_DEBUG,
+    autoWatch: false,
     browsers: ['Chrome_Travis'],
     // Kill the browser if it does not capture in the given timeout [ms].
     captureTimeout: 60000,

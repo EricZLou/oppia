@@ -469,18 +469,6 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         self.assertEqual(self._get_all_incomplete_collection_ids(
             self.user_id), [])
 
-
-
-
-
-
-
-
-
-
-
-
-
     def test_get_all_completed_exp_ids(self):
         self.assertEqual(learner_progress_services.get_all_completed_exp_ids(
             self.user_id), [])
