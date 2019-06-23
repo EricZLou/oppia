@@ -9,6 +9,7 @@ addons:
   browserstack:
     username: $USERNAME
     access_key: $ACCESS_KEY
+  chrome: stable
 
 branches:
   only:

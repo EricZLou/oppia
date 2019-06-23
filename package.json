@@ -4,14 +4,15 @@
   "description": "Oppia enables the creation of interactive online lessons.",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start --browsers Chrome_Travis",
+    "test:prod": "karma start --browsers Chrome_Travis --single-run"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oppia/oppia.git"
   },
   "author": "",
-  "license": "Apache v2",
+  "license": "(Beerware OR Unlicense OR WTFPL)",
   "bugs": {
     "url": "https://github.com/oppia/oppia/issues"
   },
@@ -64,7 +65,8 @@
     "typescript": "^3.4.5",
     "uglify-js": "^3.5.8",
     "webdriver-manager": "^12.1.2",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.2",
+    "is-docker": "^1.1.0"
   },
   "keywords": []
 }

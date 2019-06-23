@@ -1,5 +1,6 @@
 var argv = require('yargs').argv;
 var generatedJs = 'third_party/generated/js/third_party.js';
+const isDocker = require('is-docker')();
 if (argv.prodEnv) {
   generatedJs = (
     'third_party/generated/js/third_party.min.js');
@@ -100,23 +101,20 @@ module.exports = function(config) {
     singleRun: true,
     customLaunchers: {
       Chrome_Travis: {
-        base: 'Chrome',
-        flags: [
-		'--no-sandbox',
-		'--disable-setuid-sandbox',
-		'--headless',
-		'--disable-gpu',
-		'--password-store=basic',
-		'--disable-web-security'
-		]
+        base: 'ChromeHeadless',
+        flags: isDocker ? ['--no-sandbox',
+      		'--disable-setuid-sandbox',
+        	'--disable-web-security',
+          '--password-store=basic']
+          : []
       }
     },
     plugins: [
-      'karma-jasmine',
-      'karma-chrome-launcher',
-      'karma-ng-html2js-preprocessor',
-      'karma-json-fixtures-preprocessor',
-      'karma-coverage'
+      require('karma-jasmine'),
+      require('karma-ng-html2js-preprocessor'),
+      require('karma-json-fixtures-preprocessor'),
+      require('karma-coverage'),
+      require('karma-chrome-launcher')
     ],
     ngHtml2JsPreprocessor: {
       moduleName: 'directiveTemplates',
