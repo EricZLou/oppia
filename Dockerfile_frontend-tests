@@ -1,5 +1,4 @@
-# FROM node:8.2.1
-FROM node:9.10.0
+FROM node:12.4.0
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
@@ -16,6 +15,13 @@ RUN apt-get update && apt-get install -y google-chrome-stable
 
 WORKDIR /home/oppia
 
-ADD package.json /home/oppia/
-RUN yarn install
+COPY package.json yarn.lock /home/oppia/
+COPY . /home/oppia/
 RUN yarn
+RUN npm config set unsafe-perm=true
+
+# RUN chown -R node ~/.npm
+# RUN chown -R node /usr/local/lib/node_modules
+# RUN chown -R `whoami` /usr/local/lib/node_modules
+
+# RUN /home/oppia/scripts/run_frontend_tests.sh --skip-install=true

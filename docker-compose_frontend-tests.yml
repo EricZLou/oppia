@@ -9,4 +9,3 @@ services:
     container_name: "oppia"
     volumes:
       - "./:/home/oppia/:rw"
-    entrypoint: ["/home/oppia/scripts/run_frontend_tests.sh"]
