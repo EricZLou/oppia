@@ -1,4 +1,3 @@
-# FROM ubuntu:14.04
 FROM node:12.4.0
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
@@ -17,10 +16,8 @@ RUN apt-get update && apt-get install -y google-chrome-stable python-pip
 WORKDIR /home/oppia
 
 # Copy oppia files to image so the test has access to the necessary files
-COPY package.json yarn.lock /home/oppia/
 COPY . /home/oppia/
-RUN yarn
 RUN npm config set unsafe-perm=true
 RUN npm config set save-dev=true
 
-RUN /home/oppia/scripts/run_frontend_tests.sh --skip-install=true
+RUN bash scripts/run_frontend_tests.sh --skip-install=true

@@ -20,5 +20,3 @@ RUN mkdir /home/oppia
 COPY . /home/oppia/
 
 WORKDIR /home/oppia/
-RUN ls
-RUN bash scripts/install_prerequisites.sh
