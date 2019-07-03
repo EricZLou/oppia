@@ -1,3 +1,4 @@
+# FROM ubuntu:14.04
 FROM node:12.4.0
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
@@ -11,17 +12,15 @@ RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://ar
 # Install Google Chrome
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get update && apt-get install -y google-chrome-stable
+RUN apt-get update && apt-get install -y google-chrome-stable python-pip
 
 WORKDIR /home/oppia
 
+# Copy oppia files to image so the test has access to the necessary files
 COPY package.json yarn.lock /home/oppia/
 COPY . /home/oppia/
 RUN yarn
 RUN npm config set unsafe-perm=true
+RUN npm config set save-dev=true
 
-# RUN chown -R node ~/.npm
-# RUN chown -R node /usr/local/lib/node_modules
-# RUN chown -R `whoami` /usr/local/lib/node_modules
-
-# RUN /home/oppia/scripts/run_frontend_tests.sh --skip-install=true
+RUN /home/oppia/scripts/run_frontend_tests.sh --skip-install=true
