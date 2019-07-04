@@ -15,8 +15,12 @@
 /**
  * @fileoverview Service to get topic data.
  */
-oppia.constant(
-  'TOPIC_DATA_URL_TEMPLATE', '/topic_data_handler/<topic_name>');
+
+require('domain/utilities/UrlInterpolationService.ts');
+
+require('domain/topic_viewer/topic-viewer-domain.constants.ts');
+
+var oppia = require('AppInit.ts').module;
 
 oppia.factory('TopicViewerBackendApiService', [
   '$http', '$q', 'UrlInterpolationService', 'TOPIC_DATA_URL_TEMPLATE',

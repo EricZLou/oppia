@@ -16,8 +16,12 @@
  * @fileoverview Service to retrieve read only information
  * about the concept card of a skill from the backend.
  */
-oppia.constant(
-  'CONCEPT_CARD_DATA_URL_TEMPLATE', '/concept_card_handler/<skill_id>');
+
+require('domain/utilities/UrlInterpolationService.ts');
+
+require('domain/skill/skill-domain.constants.ts');
+
+var oppia = require('AppInit.ts').module;
 
 oppia.factory('ConceptCardBackendApiService', [
   '$http', '$q', 'UrlInterpolationService', 'CONCEPT_CARD_DATA_URL_TEMPLATE',

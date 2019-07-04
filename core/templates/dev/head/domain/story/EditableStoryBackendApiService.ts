@@ -15,9 +15,12 @@
 /**
  * @fileoverview Service to send changes to a story to the backend.
  */
-oppia.constant(
-  'EDITABLE_STORY_DATA_URL_TEMPLATE',
-  '/story_editor_handler/data/<topic_id>/<story_id>');
+
+require('domain/utilities/UrlInterpolationService.ts');
+
+require('domain/story/story-domain.constants.ts');
+
+var oppia = require('AppInit.ts').module;
 
 oppia.factory('EditableStoryBackendApiService', [
   '$http', '$q', 'UrlInterpolationService',

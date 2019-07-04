@@ -17,57 +17,57 @@
  * domain objects.
  */
 
-oppia.factory('SubtitledHtmlObjectFactory', [
-  'AudioTranslationObjectFactory',
-  function(AudioTranslationObjectFactory) {
-    var SubtitledHtml = function(html, contentId) {
-      this._html = html;
-      this._contentId = contentId;
-    };
+var oppia = require('AppInit.ts').module;
 
-    SubtitledHtml.prototype.getHtml = function() {
-      return this._html;
-    };
+oppia.factory('SubtitledHtmlObjectFactory', [function() {
+  var SubtitledHtml = function(html, contentId) {
+    this._html = html;
+    this._contentId = contentId;
+  };
 
-    SubtitledHtml.prototype.getContentId = function() {
-      return this._contentId;
-    };
+  SubtitledHtml.prototype.getHtml = function() {
+    return this._html;
+  };
 
-    SubtitledHtml.prototype.setHtml = function(newHtml) {
-      this._html = newHtml;
-    };
+  SubtitledHtml.prototype.getContentId = function() {
+    return this._contentId;
+  };
 
-    SubtitledHtml.prototype.hasNoHtml = function() {
-      return !this._html;
-    };
+  SubtitledHtml.prototype.setHtml = function(newHtml) {
+    this._html = newHtml;
+  };
 
-    SubtitledHtml.prototype.toBackendDict = function() {
-      return {
-        html: this._html,
-        content_id: this._contentId
-      };
-    };
+  SubtitledHtml.prototype.hasNoHtml = function() {
+    return !this._html;
+  };
 
-    SubtitledHtml.prototype.isEmpty = function() {
-      return this.hasNoHtml();
+  SubtitledHtml.prototype.toBackendDict = function() {
+    return {
+      html: this._html,
+      content_id: this._contentId
     };
+  };
 
-    // TODO (ankita240796) Remove the bracket notation once Angular2 gets in.
-    /* eslint-disable dot-notation */
-    SubtitledHtml['createFromBackendDict'] = function(
-    /* eslint-enable dot-notation */
-        subtitledHtmlBackendDict) {
-      return new SubtitledHtml(
-        subtitledHtmlBackendDict.html, subtitledHtmlBackendDict.content_id);
-    };
+  SubtitledHtml.prototype.isEmpty = function() {
+    return this.hasNoHtml();
+  };
 
-    // TODO (ankita240796) Remove the bracket notation once Angular2 gets in.
-    /* eslint-disable dot-notation */
-    SubtitledHtml['createDefault'] = function(html, contentId) {
-    /* eslint-enable dot-notation */
-      return new SubtitledHtml(html, contentId);
-    };
+  // TODO (ankita240796) Remove the bracket notation once Angular2 gets in.
+  /* eslint-disable dot-notation */
+  SubtitledHtml['createFromBackendDict'] = function(
+  /* eslint-enable dot-notation */
+      subtitledHtmlBackendDict) {
+    return new SubtitledHtml(
+      subtitledHtmlBackendDict.html, subtitledHtmlBackendDict.content_id);
+  };
 
-    return SubtitledHtml;
-  }
+  // TODO (ankita240796) Remove the bracket notation once Angular2 gets in.
+  /* eslint-disable dot-notation */
+  SubtitledHtml['createDefault'] = function(html, contentId) {
+  /* eslint-enable dot-notation */
+    return new SubtitledHtml(html, contentId);
+  };
+
+  return SubtitledHtml;
+}
 ]);

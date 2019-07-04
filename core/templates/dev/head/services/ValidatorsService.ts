@@ -17,6 +17,10 @@
  * warning messages if the validation fails.
  */
 
+require('filters/string-utility-filters/normalize-whitespace.filter.ts');
+
+var oppia = require('AppInit.ts').module;
+
 oppia.factory('ValidatorsService', [
   '$filter', 'AlertsService', 'INVALID_NAME_CHARS',
   function($filter, AlertsService, INVALID_NAME_CHARS) {

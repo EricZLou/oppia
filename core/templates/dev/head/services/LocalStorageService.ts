@@ -16,10 +16,14 @@
  * @fileoverview Utility service for saving data locally on the client machine.
  */
 
+require('domain/exploration/ExplorationDraftObjectFactory.ts');
+
 // Service for saving exploration draft changes to local storage.
 //
 // Note that the draft is only saved if localStorage exists and works
 // (i.e. has storage capacity).
+var oppia = require('AppInit.ts').module;
+
 oppia.factory('LocalStorageService', [
   'ExplorationDraftObjectFactory',
   function(ExplorationDraftObjectFactory) {

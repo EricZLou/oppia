@@ -16,6 +16,10 @@
  * @fileoverview Unit tests for EditableTopicBackendApiService.
  */
 
+require('domain/editor/undo_redo/UndoRedoService.ts');
+require('domain/topic/EditableTopicBackendApiService.ts');
+require('services/CsrfTokenService.ts');
+
 describe('Editable topic backend API service', function() {
   var EditableTopicBackendApiService = null;
   var sampleDataResults = null;
@@ -23,18 +27,26 @@ describe('Editable topic backend API service', function() {
   var $scope = null;
   var $httpBackend = null;
   var UndoRedoService = null;
+  var CsrfService = null;
 
   beforeEach(angular.mock.module('oppia'));
   beforeEach(
     angular.mock.module('oppia', GLOBALS.TRANSLATOR_PROVIDER_FOR_TESTS));
 
-  beforeEach(angular.mock.inject(function($injector) {
+  beforeEach(angular.mock.inject(function($injector, $q) {
     EditableTopicBackendApiService = $injector.get(
       'EditableTopicBackendApiService');
     UndoRedoService = $injector.get('UndoRedoService');
     $rootScope = $injector.get('$rootScope');
     $scope = $rootScope.$new();
     $httpBackend = $injector.get('$httpBackend');
+    CsrfService = $injector.get('CsrfTokenService');
+
+    spyOn(CsrfService, 'getTokenAsync').and.callFake(function() {
+      var deferred = $q.defer();
+      deferred.resolve('sample-csrf-token');
+      return deferred.promise;
+    });
 
     // Sample topic object returnable from the backend
     sampleDataResults = {

@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @fileoverview Undo Redo Service.
+ */
+
+require('domain/editor/undo_redo/BaseUndoRedoService.ts');
+
+var oppia = require('AppInit.ts').module;
+
 oppia.factory('UndoRedoService', [
   'BaseUndoRedoService', function(BaseUndoRedoService) {
     var child = Object.create(BaseUndoRedoService);

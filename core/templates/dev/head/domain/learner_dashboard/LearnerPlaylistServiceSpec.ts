@@ -16,6 +16,10 @@
  * @fileoverview Tests for LearnerPlaylistService.js.
  */
 
+require('domain/learner_dashboard/LearnerPlaylistService.ts');
+require('domain/utilities/UrlInterpolationService.ts');
+require('services/CsrfTokenService.ts');
+
 describe('Learner playlist service factory', function() {
   var LearnerPlaylistService = null;
   var $httpBackend = null;
@@ -25,6 +29,7 @@ describe('Learner playlist service factory', function() {
   var activityId = '1';
   var addToLearnerPlaylistUrl = '';
   var AlertsService = null;
+  var CsrfService = null;
   var spyInfoMessage = null;
   var spySuccessMessage = null;
 
@@ -32,7 +37,7 @@ describe('Learner playlist service factory', function() {
   beforeEach(
     angular.mock.module('oppia', GLOBALS.TRANSLATOR_PROVIDER_FOR_TESTS));
 
-  beforeEach(angular.mock.inject(function($injector) {
+  beforeEach(angular.mock.inject(function($injector, $q) {
     $httpBackend = $injector.get('$httpBackend');
     LearnerPlaylistService = $injector.get(
       'LearnerPlaylistService');
@@ -41,6 +46,13 @@ describe('Learner playlist service factory', function() {
     AlertsService = $injector.get('AlertsService');
     spyOn(AlertsService, 'addInfoMessage').and.callThrough();
     spyOn(AlertsService, 'addSuccessMessage').and.callThrough();
+    CsrfService = $injector.get('CsrfTokenService');
+
+    spyOn(CsrfService, 'getTokenAsync').and.callFake(function() {
+      var deferred = $q.defer();
+      deferred.resolve('sample-csrf-token');
+      return deferred.promise;
+    });
   }));
 
   beforeEach(function() {

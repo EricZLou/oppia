@@ -13,8 +13,10 @@
 // limitations under the License.
 
 /**
- * @fileoverview Tests for StoryContentsObjectFactory.
+ * @fileoverview Tests for StoryNodeObjectFactory.
  */
+
+require('domain/story/StoryNodeObjectFactory.ts');
 
 describe('Story node object factory', function() {
   var StoryNodeObjectFactory = null;

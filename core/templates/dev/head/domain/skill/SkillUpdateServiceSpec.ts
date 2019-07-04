@@ -13,8 +13,15 @@
 // limitations under the License.
 
 /**
-* @fileoverview Unit tests for SkillUpdateService.
-*/
+ * @fileoverview Unit tests for SkillUpdateService.
+ */
+
+require('App.ts');
+require('domain/editor/undo_redo/UndoRedoService.ts');
+require('domain/exploration/SubtitledHtmlObjectFactory.ts');
+require('domain/skill/MisconceptionObjectFactory.ts');
+require('domain/skill/SkillObjectFactory.ts');
+require('domain/skill/SkillUpdateService.ts');
 
 describe('Skill update service', function() {
   var SkillUpdateService,
@@ -144,7 +151,7 @@ describe('Skill update service', function() {
     SkillUpdateService.deleteMisconception(skill, '2');
     expect(UndoRedoService.getCommittableChangeList()).toEqual([{
       cmd: 'delete_skill_misconception',
-      id: '2'
+      misconception_id: '2'
     }]);
     expect(skill.getMisconceptions().length).toEqual(1);
     UndoRedoService.undoChange(skill);
@@ -160,7 +167,7 @@ describe('Skill update service', function() {
       property_name: 'name',
       old_value: 'test name',
       new_value: 'new name',
-      id: '2'
+      misconception_id: '2'
     }]);
     expect(skill.findMisconceptionById('2').getName()).toEqual('new name');
     UndoRedoService.undoChange(skill);
@@ -176,7 +183,7 @@ describe('Skill update service', function() {
       property_name: 'notes',
       old_value: 'test notes',
       new_value: 'new notes',
-      id: '2'
+      misconception_id: '2'
     }]);
     expect(skill.findMisconceptionById('2').getNotes()).toEqual('new notes');
     UndoRedoService.undoChange(skill);
@@ -195,7 +202,7 @@ describe('Skill update service', function() {
       property_name: 'feedback',
       old_value: 'test feedback',
       new_value: 'new feedback',
-      id: '2'
+      misconception_id: '2'
     }]);
     expect(skill.findMisconceptionById('2').getFeedback())
       .toEqual('new feedback');

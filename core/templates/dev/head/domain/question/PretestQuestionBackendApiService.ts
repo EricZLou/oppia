@@ -15,9 +15,12 @@
 /**
  * @fileoverview Service to receive questions as pretests for an exploration.
  */
-oppia.constant(
-  'PRETEST_QUESTIONS_URL_TEMPLATE',
-  '/pretest_handler/<exploration_id>?story_id=<story_id>&cursor=<cursor>');
+
+require('domain/utilities/UrlInterpolationService.ts');
+
+require('domain/question/question-domain.constants.ts');
+
+var oppia = require('AppInit.ts').module;
 
 oppia.factory('PretestQuestionBackendApiService', [
   '$http', '$q', 'UrlInterpolationService', 'PRETEST_QUESTIONS_URL_TEMPLATE',
@@ -27,7 +30,7 @@ oppia.factory('PretestQuestionBackendApiService', [
 
     var _fetchPretestQuestions = function(
         explorationId, storyId, successCallback, errorCallback) {
-      if (!storyId) {
+      if (!storyId || !storyId.match(/^[a-zA-Z0-9]+$/i)) {
         successCallback([]);
         return;
       }

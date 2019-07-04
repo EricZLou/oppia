@@ -16,6 +16,9 @@
  * @fileoverview Service to send changes to a collection to the backend.
  */
 
+require('domain/collection/ReadOnlyCollectionBackendApiService.ts');
+require('domain/utilities/UrlInterpolationService.ts');
+
 // TODO(bhenning): I think that this might be better merged with the
 // CollectionBackendApiService. However, that violates the principle of a
 // backend API service being available for exactly one URL. To fix this, the
@@ -28,6 +31,8 @@
 // Discuss and decide whether this is a good approach and then remove this TODO
 // after deciding and acting upon the decision (which would mean implementing
 // it if it's agreed upon).
+var oppia = require('AppInit.ts').module;
+
 oppia.factory('EditableCollectionBackendApiService', [
   '$http', '$q', 'ReadOnlyCollectionBackendApiService',
   'UrlInterpolationService', 'COLLECTION_DATA_URL_TEMPLATE',

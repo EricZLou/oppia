@@ -17,6 +17,7 @@
 from core.domain import rights_manager
 from core.domain import user_services
 from core.tests import test_utils
+import feconf
 
 
 class ModeratorPageTests(test_utils.GenericTestBase):
@@ -68,8 +69,7 @@ class FeaturedActivitiesHandlerTests(test_utils.GenericTestBase):
 
     def test_unpublished_activities_cannot_be_added_to_featured_list(self):
         self.login(self.MODERATOR_EMAIL)
-        response = self.get_html_response('/moderator')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         # Posting a list that includes private activities results in an error.
         self.post_json(
@@ -98,5 +98,32 @@ class FeaturedActivitiesHandlerTests(test_utils.GenericTestBase):
                     'id': self.EXP_ID_1,
                 }],
             }, csrf_token=csrf_token)
+        featured_activity_references = self.get_json(
+            '/moderatorhandler/featured')['featured_activity_references']
+        self.assertEqual(featured_activity_references[0]['id'], self.EXP_ID_1)
+        self.logout()
 
+
+class EmailDraftHandlerTests(test_utils.GenericTestBase):
+    def setUp(self):
+        super(EmailDraftHandlerTests, self).setUp()
+        self.signup(self.MODERATOR_EMAIL, self.MODERATOR_USERNAME)
+        self.set_moderators([self.MODERATOR_USERNAME])
+
+        self.can_send_emails_ctx = self.swap(
+            feconf, 'CAN_SEND_EMAILS', True)
+        self.can_send_email_moderator_action_ctx = self.swap(
+            feconf, 'REQUIRE_EMAIL_ON_MODERATOR_ACTION', True)
+
+    def test_get_draft_email_body(self):
+        self.login(self.MODERATOR_EMAIL)
+        d_text = self.get_json(
+            '/moderatorhandler/email_draft')['draft_email_body']
+        self.assertEqual(d_text, '')
+        expected_draft_text_body = ('I\'m writing to inform you that '
+                                    'I have unpublished the above exploration.')
+        with self.can_send_emails_ctx, self.can_send_email_moderator_action_ctx:
+            d_text = self.get_json(
+                '/moderatorhandler/email_draft')['draft_email_body']
+            self.assertEqual(d_text, expected_draft_text_body)
         self.logout()

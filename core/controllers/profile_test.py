@@ -49,8 +49,7 @@ class SignupTests(test_utils.GenericTestBase):
     def test_to_check_url_redirection_in_signup(self):
         """To validate the redirections from return_url."""
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         # Registering this user fully.
         self.post_json(
@@ -93,8 +92,7 @@ class SignupTests(test_utils.GenericTestBase):
 
     def test_accepting_terms_is_handled_correctly(self):
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         response_dict = self.post_json(
             feconf.SIGNUP_DATA_URL, {'agreed_to_terms': False},
@@ -117,8 +115,7 @@ class SignupTests(test_utils.GenericTestBase):
     def test_username_is_handled_correctly(self):
         self.login(self.EDITOR_EMAIL)
 
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         response_dict = self.post_json(
             feconf.SIGNUP_DATA_URL, {'agreed_to_terms': True},
@@ -154,8 +151,7 @@ class SignupTests(test_utils.GenericTestBase):
 
     def test_default_dashboard_for_new_users(self):
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         # This user should have the creator dashboard as default.
         self.post_json(
@@ -173,8 +169,7 @@ class SignupTests(test_utils.GenericTestBase):
         self.logout()
 
         self.login(self.VIEWER_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         # This user should have the learner dashboard as default.
         self.post_json(
@@ -191,6 +186,34 @@ class SignupTests(test_utils.GenericTestBase):
 
         self.logout()
 
+    def test_user_settings_of_non_existing_user(self):
+        self.login(self.OWNER_EMAIL)
+        values_dict = {
+            'can_send_emails': False,
+            'has_agreed_to_latest_terms': False,
+            'has_ever_registered': False,
+            'username': None,
+        }
+
+        response = self.get_json(feconf.SIGNUP_DATA_URL)
+        self.assertDictEqual(values_dict, response)
+        self.logout()
+
+    def test_user_settings_of_existing_user(self):
+        self.signup(self.OWNER_EMAIL, self.OWNER_USERNAME)
+        self.login(self.OWNER_EMAIL)
+        values_dict = {
+            'can_send_emails': True,
+            'has_agreed_to_latest_terms': True,
+            'has_ever_registered': True,
+            'username': 'owner',
+        }
+        with self.swap(feconf, 'CAN_SEND_EMAILS', True):
+            response = self.get_json(feconf.SIGNUP_DATA_URL)
+            self.assertDictEqual(values_dict, response)
+
+        self.logout()
+
 
 class UsernameCheckHandlerTests(test_utils.GenericTestBase):
 
@@ -198,8 +221,7 @@ class UsernameCheckHandlerTests(test_utils.GenericTestBase):
         self.signup('abc@example.com', username='abc')
 
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         response_dict = self.post_json(
             feconf.USERNAME_CHECK_DATA_URL, {'username': 'abc'},
@@ -237,8 +259,7 @@ class EmailPreferencesTests(test_utils.GenericTestBase):
 
     def test_user_not_setting_email_prefs_on_signup(self):
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.post_json(
             feconf.SIGNUP_DATA_URL,
             {'username': 'abc', 'agreed_to_terms': True},
@@ -274,8 +295,7 @@ class EmailPreferencesTests(test_utils.GenericTestBase):
 
     def test_user_allowing_emails_on_signup(self):
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.post_json(
             feconf.SIGNUP_DATA_URL,
             {'username': 'abc', 'agreed_to_terms': True,
@@ -311,8 +331,7 @@ class EmailPreferencesTests(test_utils.GenericTestBase):
 
     def test_user_disallowing_emails_on_signup(self):
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response(feconf.SIGNUP_URL)
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.post_json(
             feconf.SIGNUP_DATA_URL,
             {'username': 'abc', 'agreed_to_terms': True,
@@ -355,8 +374,7 @@ class EmailPreferencesTests(test_utils.GenericTestBase):
         self.signup(self.EDITOR_EMAIL, username=self.EDITOR_USERNAME)
         editor_id = self.get_user_id_from_email(self.EDITOR_EMAIL)
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
 
         payload = {
             'update_type': 'email_preferences',
@@ -431,6 +449,50 @@ class PreferencesHandlerTests(test_utils.GenericTestBase):
             self.viewer_id, self.owner_id)
         response = self.get_json(feconf.PREFERENCES_DATA_URL)
         self.assertEqual(len(response['subscription_list']), 0)
+        self.logout()
+
+    def test_can_update_profile_picture_data_url(self):
+        self.login(self.OWNER_EMAIL)
+        csrf_token = self.get_new_csrf_token()
+        user_settings = user_services.get_user_settings(self.owner_id)
+        self.assertTrue(
+            user_settings.profile_picture_data_url.startswith(
+                'data:image/png;'))
+        self.put_json(
+            feconf.PREFERENCES_DATA_URL,
+            payload={'update_type': 'profile_picture_data_url',
+                     'data': 'new_profile_picture_data_url'},
+            csrf_token=csrf_token)
+        user_settings = user_services.get_user_settings(self.owner_id)
+        self.assertEqual(
+            user_settings.profile_picture_data_url,
+            'new_profile_picture_data_url')
+        self.logout()
+
+    def test_can_update_default_dashboard(self):
+        self.login(self.OWNER_EMAIL)
+        csrf_token = self.get_new_csrf_token()
+        user_settings = user_services.get_user_settings(self.owner_id)
+        self.assertIsNone(user_settings.default_dashboard)
+        self.put_json(
+            feconf.PREFERENCES_DATA_URL,
+            payload={'update_type': 'default_dashboard',
+                     'data': constants.DASHBOARD_TYPE_CREATOR},
+            csrf_token=csrf_token)
+        user_settings = user_services.get_user_settings(self.owner_id)
+        self.assertEqual(
+            user_settings.default_dashboard, constants.DASHBOARD_TYPE_CREATOR)
+        self.logout()
+
+    def test_update_preferences_with_invalid_update_type_raises_exception(self):
+        self.login(self.OWNER_EMAIL)
+        csrf_token = self.get_new_csrf_token()
+        with self.assertRaisesRegexp(Exception, 'Invalid update type:'):
+            self.put_json(
+                feconf.PREFERENCES_DATA_URL,
+                payload={'update_type': 'invalid_update_type'},
+                csrf_token=csrf_token)
+        self.logout()
 
 
 class ProfileLinkTests(test_utils.GenericTestBase):
@@ -460,8 +522,7 @@ class ProfileDataHandlerTests(test_utils.GenericTestBase):
     def test_preference_page_updates(self):
         self.signup(self.EDITOR_EMAIL, username=self.EDITOR_USERNAME)
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         original_preferences = self.get_json('/preferenceshandler/data')
         self.assertEqual(
             ['en'], original_preferences['preferred_language_codes'])
@@ -488,8 +549,7 @@ class ProfileDataHandlerTests(test_utils.GenericTestBase):
     def test_profile_data_is_independent_of_currently_logged_in_user(self):
         self.signup(self.EDITOR_EMAIL, username=self.EDITOR_USERNAME)
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.put_json(
             '/preferenceshandler/data',
             {'update_type': 'user_bio', 'data': 'My new editor bio'},
@@ -502,8 +562,7 @@ class ProfileDataHandlerTests(test_utils.GenericTestBase):
 
         self.signup(self.VIEWER_EMAIL, username=self.VIEWER_USERNAME)
         self.login(self.VIEWER_EMAIL)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.put_json(
             '/preferenceshandler/data',
             {'update_type': 'user_bio', 'data': 'My new viewer bio'},
@@ -574,6 +633,40 @@ class FirstContributionDateTests(test_utils.GenericTestBase):
         self.assertEqual(
             response_dict['first_contribution_msec'],
             first_time_in_msecs)
+
+
+class ProfilePageTests(test_utils.GenericTestBase):
+
+    def test_get_profile_page_of_non_existing_user_raises_status_404(self):
+        self.get_html_response(
+            '/profile/%s' % self.OWNER_USERNAME, expected_status_int=404)
+
+    def test_get_profile_page_of_existing_user(self):
+        self.signup(self.OWNER_EMAIL, self.OWNER_USERNAME)
+        response = self.get_html_response('/profile/%s' % self.OWNER_USERNAME)
+        self.assertIn(
+            '<profile-page></profile-page>', response.body)
+
+
+class ProfilePictureHandlerTests(test_utils.GenericTestBase):
+
+    def test_get_profile_picture_with_updated_value(self):
+        self.get_json(
+            '/preferenceshandler/profile_picture', expected_status_int=401)
+        self.signup(self.OWNER_EMAIL, self.OWNER_USERNAME)
+        owner_id = self.get_user_id_from_email(self.OWNER_EMAIL)
+        self.login(self.OWNER_EMAIL)
+        user_settings = user_services.get_user_settings(owner_id)
+        response = self.get_json('/preferenceshandler/profile_picture')
+        self.assertEqual(
+            response['profile_picture_data_url'],
+            user_settings.profile_picture_data_url)
+        user_services.update_profile_picture_data_url(
+            owner_id, 'new_profile_picture')
+        response = self.get_json('/preferenceshandler/profile_picture')
+        self.assertEqual(
+            response['profile_picture_data_url'], 'new_profile_picture')
+        self.logout()
 
 
 class UserContributionsTests(test_utils.GenericTestBase):
@@ -655,15 +748,18 @@ class UserContributionsTests(test_utils.GenericTestBase):
 
 class SiteLanguageHandlerTests(test_utils.GenericTestBase):
 
+    def setUp(self):
+        super(SiteLanguageHandlerTests, self).setUp()
+        self.signup(self.EDITOR_EMAIL, self.EDITOR_USERNAME)
+        self.editor_id = self.get_user_id_from_email(self.EDITOR_EMAIL)
+
     def test_save_site_language_handler(self):
         """Test the language is saved in the preferences when handler is
         called.
         """
-        self.signup(self.EDITOR_EMAIL, self.EDITOR_USERNAME)
         language_code = 'es'
         self.login(self.EDITOR_EMAIL)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.put_json(
             '/preferenceshandler/data', {
                 'update_type': 'preferred_site_language_code',
@@ -677,6 +773,20 @@ class SiteLanguageHandlerTests(test_utils.GenericTestBase):
 
         self.logout()
 
+    def test_can_update_site_language_code(self):
+        self.login(self.EDITOR_EMAIL)
+        user_settings = user_services.get_user_settings(
+            self.editor_id, strict=True)
+        self.assertIsNone(user_settings.preferred_site_language_code)
+        csrf_token = self.get_new_csrf_token()
+        self.put_json(
+            feconf.SITE_LANGUAGE_DATA_URL, payload={'site_language_code': 'en'},
+            csrf_token=csrf_token)
+        user_settings = user_services.get_user_settings(
+            self.editor_id, strict=True)
+        self.assertEqual(user_settings.preferred_site_language_code, 'en')
+        self.logout()
+
 
 class LongUserBioHandlerTests(test_utils.GenericTestBase):
     USERNAME_A = 'a'
@@ -687,8 +797,7 @@ class LongUserBioHandlerTests(test_utils.GenericTestBase):
     def test_userbio_within_limit(self):
         self.signup(self.EMAIL_A, self.USERNAME_A)
         self.login(self.EMAIL_A)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         self.put_json(
             '/preferenceshandler/data', {
                 'update_type': 'user_bio',
@@ -703,8 +812,7 @@ class LongUserBioHandlerTests(test_utils.GenericTestBase):
     def test_user_bio_exceeds_limit(self):
         self.signup(self.EMAIL_B, self.USERNAME_B)
         self.login(self.EMAIL_B)
-        response = self.get_html_response('/preferences')
-        csrf_token = self.get_csrf_token_from_response(response)
+        csrf_token = self.get_new_csrf_token()
         user_bio_response = self.put_json(
             '/preferenceshandler/data', {
                 'update_type': 'user_bio',
@@ -726,14 +834,33 @@ class UserInfoHandlerTests(test_utils.GenericTestBase):
         self.signup(self.EDITOR_EMAIL, self.EDITOR_USERNAME)
         self.login(self.EDITOR_EMAIL)
         json_response = self.get_json('/userinfohandler')
-        self.assertDictContainsSubset({
+        self.assertDictEqual({
             'is_moderator': False,
             'is_admin': False,
             'is_topic_manager': False,
             'is_super_admin': False,
             'can_create_collections': False,
+            'preferred_site_language_code': None,
             'username': self.EDITOR_USERNAME,
             'user_is_logged_in': True}, json_response)
         self.logout()
 
-        self.get_json('/userinfohandler', expected_status_int=401)
+        json_response = self.get_json('/userinfohandler')
+        self.assertDictEqual({
+            'user_is_logged_in': False
+        }, json_response)
+
+
+class UrlHandlerTests(test_utils.GenericTestBase):
+
+    def test_login_url_is_none_for_signed_in_user(self):
+        self.signup(self.EDITOR_EMAIL, self.EDITOR_USERNAME)
+        self.login(self.EDITOR_EMAIL)
+        response = self.get_json('/url_handler')
+        self.assertIsNone(response['login_url'])
+        self.logout()
+
+    def test_login_url_gets_created_for_signed_out_users(self):
+        response = self.get_json(
+            '/url_handler', params={'current_url': 'random_url'})
+        self.assertTrue(response['login_url'].endswith('random_url'))

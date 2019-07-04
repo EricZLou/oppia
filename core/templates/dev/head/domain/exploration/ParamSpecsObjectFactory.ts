@@ -18,6 +18,10 @@
  * which defines them (represented as ParamSpec objects).
  */
 
+require('domain/exploration/ParamSpecObjectFactory.ts');
+
+var oppia = require('AppInit.ts').module;
+
 oppia.factory('ParamSpecsObjectFactory', [
   'ParamSpecObjectFactory',
   function(ParamSpecObjectFactory) {
