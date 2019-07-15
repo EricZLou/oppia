@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  oppia:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_frontend-tests
+    working_dir: /home/oppia
+    container_name: "oppia"
+    volumes:
+      - .:/home/oppia/:rw
+      - ./node_modules:/home/oppia/node_modules

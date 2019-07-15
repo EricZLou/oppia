@@ -2,6 +2,7 @@ var argv = require('yargs').argv;
 var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 var path = require('path');
 var generatedJs = 'third_party/generated/js/third_party.js';
+const isDocker = require('is-docker')();
 if (argv.prodEnv) {
   generatedJs = (
     'third_party/generated/js/third_party.min.js');
@@ -97,22 +98,27 @@ module.exports = function(config) {
       subdir: '.',
       dir: '../karma_coverage_reports/'
     },
-    autoWatch: true,
+    logLevel: config.LOG_DEBUG,
+    autoWatch: false,
     browsers: ['Chrome_Travis'],
     // Kill the browser if it does not capture in the given timeout [ms].
-    captureTimeout: 60000,
+    captureTimeout: 120000,
     browserConsoleLogOptions: {
       level: 'log',
       format: '%b %T: %m',
       terminal: true
     },
-    browserNoActivityTimeout: 60000,
+    browserNoActivityTimeout: 120000,
     // Continue running in the background after running tests.
     singleRun: true,
     customLaunchers: {
       Chrome_Travis: {
-        base: 'Chrome',
-        flags: ['--no-sandbox']
+        base: 'ChromeHeadless',
+        flags: isDocker ? ['--no-sandbox',
+      		'--disable-setuid-sandbox',
+        	'--disable-web-security',
+          '--password-store=basic']
+          : []
       }
     },
 

@@ -4,7 +4,12 @@
   "description": "Oppia enables the creation of interactive online lessons.",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf build",
+    "prepare": "mkdir -p build",
+    "test": "karma start",
+    "test:prod": "karma start --single-run",
+    "build-artifact": "echo OK > build/result.txt",
+    "build": "yarn && yarn run clean && yarn run prepare && yarn run test:prod && yarn run build-artifact"
   },
   "repository": {
     "type": "git",
@@ -65,6 +70,7 @@
     "html-webpack-plugin": "4.0.0-beta.5",
     "htmllint": "^0.8.0",
     "htmllint-cli": "0.0.7",
+    "is-docker": "^1.1.0",
     "jasmine-core": "^3.4.0",
     "jasmine-spec-reporter": "^4.2.1",
     "jquery": "^3.4.0",
@@ -95,5 +101,8 @@
     "yargs": "^13.2.2",
     "zone.js": "^0.9.1"
   },
-  "keywords": []
+  "keywords": [],
+  "dependencies": {
+    "yarn": "^1.16.0"
+  }
 }
