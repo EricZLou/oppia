@@ -1,5 +1,0 @@
-FROM python:2.7-stretch
-
-WORKDIR /home/oppia/
-RUN ls
-RUN bash scripts/run_e2e_tests.sh --skip-install=true
