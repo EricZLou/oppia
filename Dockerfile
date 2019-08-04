@@ -1,24 +1,25 @@
 FROM python:2.7-stretch
 
 RUN apt-get update && \
-    apt-get -y install sudo
+    apt-get -y install sudo && \
+    apt-get -y install vim
 
 # Install OpenJDK-8
-RUN apt-get install -y openjdk-8-jdk && \
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk && \
     apt-get install -y ant && \
-    apt-get clean;
+    apt-get clean
 
 # Fix certificate issues
 RUN apt-get update && \
     apt-get install ca-certificates-java && \
     apt-get clean && \
-    update-ca-certificates -f;
+    update-ca-certificates -f
 
-# Setup JAVA_HOME -- useful for docker cmd
+# Setup JAVA_HOME
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+ENV PATH $PATH:$JAVA_HOME/bin
 RUN export JAVA_HOME
-
-FROM node:12.4.0
 
 # Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
@@ -41,9 +42,6 @@ RUN apt-get update && apt-get install -y google-chrome-stable python-pip
 # Copy oppia files to container
 RUN mkdir /home/oppia
 COPY . /home/oppia/
-
-RUN npm config set unsafe-perm=true
-RUN npm config set save-dev=true
 
 RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
 USER docker
