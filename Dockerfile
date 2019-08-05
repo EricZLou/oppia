@@ -1,48 +1,48 @@
-FROM python:2.7-stretch
+FROM ubuntu:latest
 
 RUN apt-get update && \
-    apt-get -y install sudo && \
-    apt-get -y install vim
+   apt-get install -y sudo && \
+   apt-get install -y vim
 
-# Install OpenJDK-8
+# Install Python and OpenJDK-8
 RUN apt-get update && \
-    apt-get install -y openjdk-8-jdk && \
-    apt-get install -y ant && \
-    apt-get clean
+   apt-get install -y curl python-setuptools git python-dev python-pip python-yaml && \
+   apt-get install -y wget && \
+   apt-get install -y nodejs && \
+   apt-get install -y npm && \
+   apt-get install -y openjdk-8-jdk && \
+   apt-get install -y ant && \
+   apt-get clean
 
 # Fix certificate issues
 RUN apt-get update && \
-    apt-get install ca-certificates-java && \
-    apt-get clean && \
-    update-ca-certificates -f
+   apt-get install ca-certificates-java && \
+   apt-get clean && \
+   update-ca-certificates -f
 
 # Setup JAVA_HOME
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENV PATH $PATH:$JAVA_HOME/bin
 RUN export JAVA_HOME
 
-# Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
+# Install dumb-init (Signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
 RUN dpkg -i dumb-init_*.deb
 ENTRYPOINT ["dumb-init"]
 
-# Use new sources since Jessie has been archived
-RUN printf "deb http://archive.debian.org/debian/ \
-    jessie main\ndeb-src http://archive.debian.org/debian/ \
-    jessie main\ndeb http://security.debian.org \
-    jessie/updates main\ndeb-src http://security.debian.org \
-    jessie/updates main" \
-    > /etc/apt/sources.list
+# Install packages needed for Google Chrome
+RUN apt-get update && \
+    apt-get install -y fonts-liberation libappindicator3-1 libgtk-3-0 libxss1 lsb-release xdg-utils
 
-# Install Google Chrome for frontend tests and e2e tests
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get update && apt-get install -y google-chrome-stable python-pip
+# Install Google Chrome for frontend tests
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN sudo dpkg -i google-chrome-stable_current_amd64.deb
 
-# Copy oppia files to container
+# Copy oppia files into container
 RUN mkdir /home/oppia
 COPY . /home/oppia/
 
+# Allow docker to have sudo privileges
 RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
 USER docker
 

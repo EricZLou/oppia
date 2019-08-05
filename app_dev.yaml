@@ -1,4 +1,5 @@
 runtime: python27
+env: flex
 api_version: 1
 threadsafe: false
 instance_class: F2
@@ -137,7 +138,7 @@ handlers:
   login: admin
   script: main_mail.app
   secure: always
-  
+
 # STATIC PAGES.
 - url: /get_started
   static_files: core/templates/dev/head/dist/get-started-page.mainpage.html

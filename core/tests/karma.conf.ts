@@ -102,23 +102,25 @@ module.exports = function(config) {
     autoWatch: false,
     browsers: ['Chrome_Travis'],
     // Kill the browser if it does not capture in the given timeout [ms].
-    captureTimeout: 120000,
+    browserDisconnectTimeout: 120000,
+    browserNoActivityTimeout: 150000,
+    captureTimeout: 300000,
+    processKillTimeout: 120000,
+    browserSocketTimeout: 120000,
     browserConsoleLogOptions: {
       level: 'log',
       format: '%b %T: %m',
       terminal: true
     },
-    browserNoActivityTimeout: 120000,
     // Continue running in the background after running tests.
     singleRun: true,
     customLaunchers: {
       Chrome_Travis: {
         base: 'ChromeHeadless',
-        flags: isDocker ? ['--no-sandbox',
-      		'--disable-setuid-sandbox',
-        	'--disable-web-security',
-          '--password-store=basic']
-          : []
+        flags: ['--no-sandbox',
+                '--disable-setuid-sandbox',
+        	      '--disable-web-security',
+                '--password-store=basic']
       }
     },
 
