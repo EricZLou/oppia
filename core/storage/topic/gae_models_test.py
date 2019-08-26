@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Tests for Topic model."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from constants import constants
 from core.domain import topic_domain
@@ -46,6 +47,8 @@ class TopicModelUnitTests(test_utils.GenericTestBase):
             name=self.TOPIC_NAME,
             canonical_name=self.TOPIC_CANONICAL_NAME,
             subtopic_schema_version=feconf.CURRENT_SUBTOPIC_SCHEMA_VERSION,
+            story_reference_schema_version=(
+                feconf.CURRENT_STORY_REFERENCE_SCHEMA_VERSION),
             next_subtopic_id=1,
             language_code='en'
         )

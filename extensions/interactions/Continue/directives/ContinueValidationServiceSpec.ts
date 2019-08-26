@@ -16,25 +16,37 @@
  * @fileoverview Unit tests for continue validation service.
  */
 
-require('interactions/Continue/directives/ContinueValidationService.ts');
+import { TestBed } from '@angular/core/testing';
 
-describe('ContinueValidationService', function() {
-  var validatorService, WARNING_TYPES;
+import { AnswerGroup, AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { ContinueValidationService } from
+  'interactions/Continue/directives/ContinueValidationService';
+import { Outcome, OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
 
-  var currentState;
-  var goodAnswerGroups, goodDefaultOutcome;
-  var customizationArguments;
-  var oof, agof;
+import { AppConstants } from 'app.constants';
 
-  beforeEach(function() {
-    angular.mock.module('oppia');
-  });
+describe('ContinueValidationService', () => {
+  // TODO(#7165): Replace 'any' with the exact type. This has been kept as
+  // 'any' because 'WARNING_TYPES' is a constant and its type needs to be
+  // preferably in the constants file itself.
+  let validatorService: ContinueValidationService, WARNING_TYPES: any;
 
-  beforeEach(angular.mock.inject(function($injector) {
-    validatorService = $injector.get('ContinueValidationService');
-    WARNING_TYPES = $injector.get('WARNING_TYPES');
-    oof = $injector.get('OutcomeObjectFactory');
-    agof = $injector.get('AnswerGroupObjectFactory');
+  let currentState: string;
+  let goodAnswerGroups: AnswerGroup[], goodDefaultOutcome: Outcome;
+  let customizationArguments: any;
+  let oof: OutcomeObjectFactory, agof: AnswerGroupObjectFactory;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [ContinueValidationService]
+    });
+
+    validatorService = TestBed.get(ContinueValidationService);
+    WARNING_TYPES = AppConstants.WARNING_TYPES;
+    oof = TestBed.get(OutcomeObjectFactory);
+    agof = TestBed.get(AnswerGroupObjectFactory);
     currentState = 'First State';
     goodDefaultOutcome = oof.createFromBackendDict({
       dest: 'Second State',
@@ -54,10 +66,10 @@ describe('ContinueValidationService', function() {
         value: 'Some Button Text'
       }
     };
-  }));
+  });
 
   it('should expect a non-empty button text customization argument',
-    function() {
+    () => {
       var warnings = validatorService.getAllWarnings(
         currentState, customizationArguments, [], goodDefaultOutcome);
       expect(warnings).toEqual([]);
@@ -70,14 +82,14 @@ describe('ContinueValidationService', function() {
         message: 'The button text should not be empty.'
       }]);
 
-      expect(function() {
+      expect(() => {
         validatorService.getAllWarnings(
           currentState, {}, [], goodDefaultOutcome);
       }).toThrow(
         'Expected customization arguments to have property: buttonText');
     });
 
-  it('should expect no answer groups', function() {
+  it('should expect no answer groups', () => {
     var warnings = validatorService.getAllWarnings(
       currentState, customizationArguments, goodAnswerGroups,
       goodDefaultOutcome);
@@ -89,7 +101,7 @@ describe('ContinueValidationService', function() {
   });
 
   it('should expect a non-confusing and non-null default outcome',
-    function() {
+    () => {
       var warnings = validatorService.getAllWarnings(
         currentState, customizationArguments, [], null);
       expect(warnings).toEqual([{

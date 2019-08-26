@@ -1,4 +1,5 @@
-/* eslint-disable */
+/* eslint-disable quote-props */
+/* eslint-disable quotes */
 /* Don't modify anything outside the {} brackets.
  * Insides of the {} brackets should be formatted as a JSON object.
  * JSON rules:
@@ -15,6 +16,10 @@
 var constants = {
   // Whether to allow custom event reporting to Google Analytics.
   "CAN_SEND_ANALYTICS_EVENTS": false,
+
+  // This specifies the current editor in use and used to switch
+  // between CK4 & CK5.
+  "CURRENT_RTE_IS_CKEDITOR_4": true,
 
   "ALL_CATEGORIES": ["Algebra", "Algorithms", "Architecture", "Arithmetic",
     "Art", "Astronomy", "Biology", "Business", "Calculus", "Chemistry",
@@ -266,167 +271,167 @@ var constants = {
   "SUPPORTED_AUDIO_LANGUAGES": [{
     "id": "en",
     "description": "English",
-    "related_languages": ["en"]
+    "relatedLanguages": ["en"]
   }, {
     "id": "ar",
     "description": "Arabic",
-    "related_languages": ["ar"]
+    "relatedLanguages": ["ar"]
   }, {
     "id": "bg",
     "description": "Bulgarian",
-    "related_languages": ["bg"]
+    "relatedLanguages": ["bg"]
   }, {
     "id": "bn",
     "description": "Bangla",
-    "related_languages": ["bn"]
+    "relatedLanguages": ["bn"]
   }, {
     "id": "ca",
     "description": "Catalan",
-    "related_languages": ["ca"]
+    "relatedLanguages": ["ca"]
   }, {
     "id": "zh",
     "description": "Chinese",
-    "related_languages": ["zh"]
+    "relatedLanguages": ["zh"]
   }, {
     "id": "hr",
     "description": "Croatian",
-    "related_languages": ["hr"]
+    "relatedLanguages": ["hr"]
   }, {
     "id": "cs",
     "description": "Czech",
-    "related_languages": ["cs"]
+    "relatedLanguages": ["cs"]
   }, {
     "id": "da",
     "description": "Danish",
-    "related_languages": ["da"]
+    "relatedLanguages": ["da"]
   }, {
     "id": "nl",
     "description": "Dutch",
-    "related_languages": ["nl"]
+    "relatedLanguages": ["nl"]
   }, {
     "id": "tl",
     "description": "Filipino",
-    "related_languages": ["tl"]
+    "relatedLanguages": ["tl"]
   }, {
     "id": "fi",
     "description": "Finnish",
-    "related_languages": ["fi"]
+    "relatedLanguages": ["fi"]
   }, {
     "id": "fr",
     "description": "French",
-    "related_languages": ["fr"]
+    "relatedLanguages": ["fr"]
   }, {
     "id": "de",
     "description": "German",
-    "related_languages": ["de"]
+    "relatedLanguages": ["de"]
   }, {
     "id": "el",
     "description": "Greek",
-    "related_languages": ["el"]
+    "relatedLanguages": ["el"]
   }, {
     "id": "he",
     "description": "Hebrew",
-    "related_languages": ["he"]
+    "relatedLanguages": ["he"]
   }, {
     "id": "hi",
     "description": "Hindi",
-    "related_languages": ["hi"]
+    "relatedLanguages": ["hi"]
   }, {
     "id": "hi-en",
     "description": "Hinglish",
-    "related_languages": ["hi", "en"]
+    "relatedLanguages": ["hi", "en"]
   }, {
     "id": "hu",
     "description": "Hungarian",
-    "related_languages": ["hu"]
+    "relatedLanguages": ["hu"]
   }, {
     "id": "id",
     "description": "Indonesian",
-    "related_languages": ["id"]
+    "relatedLanguages": ["id"]
   }, {
     "id": "it",
     "description": "Italian",
-    "related_languages": ["it"]
+    "relatedLanguages": ["it"]
   }, {
     "id": "ja",
     "description": "Japanese",
-    "related_languages": ["ja"]
+    "relatedLanguages": ["ja"]
   }, {
     "id": "kab",
     "description": "Kabyle",
-    "related_languages": ["kab"]
+    "relatedLanguages": ["kab"]
   }, {
     "id": "ko",
     "description": "Korean",
-    "related_languages": ["ko"]
+    "relatedLanguages": ["ko"]
   }, {
     "id": "lv",
     "description": "Latvian",
-    "related_languages": ["lv"]
+    "relatedLanguages": ["lv"]
   }, {
     "id": "lt",
     "description": "Lithuanian",
-    "related_languages": ["lt"]
+    "relatedLanguages": ["lt"]
   }, {
     "id": "no",
     "description": "Norwegian",
-    "related_languages": ["no"]
+    "relatedLanguages": ["no"]
   }, {
     "id": "fa",
     "description": "Persian",
-    "related_languages": ["fa"]
+    "relatedLanguages": ["fa"]
   }, {
     "id": "pl",
     "description": "Polish",
-    "related_languages": ["pl"]
+    "relatedLanguages": ["pl"]
   }, {
     "id": "pt",
     "description": "Portuguese",
-    "related_languages": ["pt"]
+    "relatedLanguages": ["pt"]
   }, {
     "id": "ro",
     "description": "Romanian",
-    "related_languages": ["ro"]
+    "relatedLanguages": ["ro"]
   }, {
     "id": "ru",
     "description": "Russian",
-    "related_languages": ["ru"]
+    "relatedLanguages": ["ru"]
   }, {
     "id": "sr",
     "description": "Serbian",
-    "related_languages": ["sr"]
+    "relatedLanguages": ["sr"]
   }, {
     "id": "sk",
     "description": "Slovak",
-    "related_languages": ["sk"]
+    "relatedLanguages": ["sk"]
   }, {
     "id": "sl",
     "description": "Slovenian",
-    "related_languages": ["sl"]
+    "relatedLanguages": ["sl"]
   }, {
     "id": "es",
     "description": "Spanish",
-    "related_languages": ["es"]
+    "relatedLanguages": ["es"]
   }, {
     "id": "sv",
     "description": "Swedish",
-    "related_languages": ["sw"]
+    "relatedLanguages": ["sw"]
   }, {
     "id": "th",
     "description": "Thai",
-    "related_languages": ["th"]
+    "relatedLanguages": ["th"]
   }, {
     "id": "tr",
     "description": "Turkish",
-    "related_languages": ["tr"]
+    "relatedLanguages": ["tr"]
   }, {
     "id": "uk",
     "description": "Ukrainian",
-    "related_languages": ["uk"]
+    "relatedLanguages": ["uk"]
   }, {
     "id": "vi",
     "description": "Vietnamese",
-    "related_languages": ["vi"]
+    "relatedLanguages": ["vi"]
   }],
 
   "AUTOGENERATED_AUDIO_LANGUAGES": [{
@@ -446,13 +451,13 @@ var constants = {
   "ALLOWED_QUESTION_INTERACTION_CATEGORIES": [{
     "name": "General",
     "interaction_ids": [
-        "MultipleChoiceInput",
-        "TextInput"
+      "MultipleChoiceInput",
+      "TextInput"
     ]
   }, {
     "name": "Math",
     "interaction_ids": [
-        "NumericInput"
+      "NumericInput"
     ]
   }],
 
@@ -461,40 +466,40 @@ var constants = {
   "ALLOWED_INTERACTION_CATEGORIES": [{
     "name": "General",
     "interaction_ids": [
-        "Continue",
-        "EndExploration",
-        "ImageClickInput",
-        "ItemSelectionInput",
-        "MultipleChoiceInput",
-        "TextInput",
-        "DragAndDropSortInput"
+      "Continue",
+      "EndExploration",
+      "ImageClickInput",
+      "ItemSelectionInput",
+      "MultipleChoiceInput",
+      "TextInput",
+      "DragAndDropSortInput"
     ]
   }, {
     "name": "Math",
     "interaction_ids": [
-        "FractionInput",
-        "GraphInput",
-        "LogicProof",
-        "NumericInput",
-        "SetInput",
-        "MathExpressionInput",
-        "NumberWithUnits"
+      "FractionInput",
+      "GraphInput",
+      "LogicProof",
+      "NumericInput",
+      "SetInput",
+      "MathExpressionInput",
+      "NumberWithUnits"
     ]
   }, {
     "name": "Programming",
     "interaction_ids": [
-        "CodeRepl",
-        "PencilCodeEditor"
+      "CodeRepl",
+      "PencilCodeEditor"
     ]
   }, {
     "name": "Music",
     "interaction_ids": [
-        "MusicNotesInput"
+      "MusicNotesInput"
     ]
   }, {
     "name": "Geography",
     "interaction_ids": [
-        "InteractiveMap"
+      "InteractiveMap"
     ]
   }],
 
@@ -528,6 +533,8 @@ var constants = {
 
   "DEFAULT_SKILL_DIFFICULTY": 0.3,
 
+  "SKILL_DIFFICULTIES": ["Easy", "Medium", "Hard"],
+
   "ENABLE_PREREQUISITE_SKILLS": false,
 
   "ENABLE_NEW_STRUCTURE_PLAYERS": false,
@@ -541,51 +548,73 @@ var constants = {
   "NUM_QUESTIONS_PER_PAGE": 10,
 
   "NEW_STATE_TEMPLATE": {
-      "classifier_model_id": null,
-      "content": {
-          "html": "",
-          "content_id": "content"
-      },
-      "interaction": {
-            "id": null,
-            "customization_args": {},
-            "answer_groups": [],
-            "default_outcome": {
-                "dest": "Introduction",
-                "feedback": {
-                    "content_id": "default_outcome",
-                    "html": ""
-                },
-                "labelled_as_correct": false,
-                "param_changes": [],
-                "refresher_exploration_id": null,
-                "missing_prerequisite_skill_id": null
-            },
-            "confirmed_unclassified_answers": [],
-            "hints": [],
-            "solution": null
+    "classifier_model_id": null,
+    "content": {
+      "html": "",
+      "content_id": "content"
+    },
+    "interaction": {
+      "id": null,
+      "customization_args": {},
+      "answer_groups": [],
+      "default_outcome": {
+        "dest": "Introduction",
+        "feedback": {
+          "content_id": "default_outcome",
+          "html": ""
         },
-      "param_changes": [],
-      "recorded_voiceovers": {
-          "voiceovers_mapping": {
-              "content": {},
-              "default_outcome": {}
-          }
+        "labelled_as_correct": false,
+        "param_changes": [],
+        "refresher_exploration_id": null,
+        "missing_prerequisite_skill_id": null
       },
-      "solicit_answer_details": false,
-      "written_translations": {
-          "translations_mapping": {
-              "content": {},
-              "default_outcome": {}
-          }
+      "confirmed_unclassified_answers": [],
+      "hints": [],
+      "solution": null
+    },
+    "param_changes": [],
+    "recorded_voiceovers": {
+      "voiceovers_mapping": {
+        "content": {},
+        "default_outcome": {}
       }
+    },
+    "solicit_answer_details": false,
+    "written_translations": {
+      "translations_mapping": {
+        "content": {},
+        "default_outcome": {}
+      }
+    }
   },
 
-  // Data required for Google Analytics. 
+  // Data required for Google Analytics.
   "ANALYTICS_ID": "",
   "SITE_NAME_FOR_ANALYTICS": "",
 
   "ALLOW_YAML_FILE_UPLOAD": false,
+
+  // A regular expression for tags.
+  "TAG_REGEX": "^[a-z ]+$",
+
+  // Invalid names for parameters used in expressions.
+  "INVALID_PARAMETER_NAMES": [
+    "answer", "choices", "abs", "all", "and", "any", "else",
+    "floor", "if", "log", "or", "pow", "round", "then"
+  ],
+
+  // Unfinished features.
+  "SHOW_TRAINABLE_UNRESOLVED_ANSWERS": false,
+
+  // eslint-disable-next-line max-len
+  "DEFAULT_TWITTER_SHARE_MESSAGE_EDITOR": "Check out this interactive lesson I created on Oppia - a free platform for teaching and learning!",
+
+  "OPPORTUNITY_TYPE_TRANSLATION": "translation",
+  "OPPORTUNITY_TYPE_VOICEOVER": "voiceover",
+
+  // The bucket name is set to None-resources to enable it to be used
+  // in prod mode when the resource bucket name is not allowed to be null.
+  "GCS_RESOURCE_BUCKET_NAME": "None-resources",
 
   "DEV_MODE": true
 };

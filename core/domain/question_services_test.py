@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for core.domain.question_services."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import logging
 
@@ -117,7 +118,7 @@ class QuestionServicesUnitTest(test_utils.GenericTestBase):
         self.assertEqual(
             questions[0].to_dict(), question_1.to_dict())
 
-    def test_get_questions_by_skill_ids(self):
+    def test_get_questions_by_skill_ids_with_fetch_by_difficulty(self):
         question_services.create_new_question_skill_link(
             self.editor_id, self.question_id, 'skill_1', 0.3)
         question_services.create_new_question_skill_link(
@@ -126,7 +127,23 @@ class QuestionServicesUnitTest(test_utils.GenericTestBase):
             self.editor_id, self.question_id_2, 'skill_2', 0.5)
 
         questions = question_services.get_questions_by_skill_ids(
-            4, ['skill_1', 'skill_2'])
+            2, ['skill_1', 'skill_2'], True)
+        questions.sort(key=lambda question: question.last_updated)
+
+        self.assertEqual(len(questions), 2)
+        self.assertEqual(questions[0].to_dict(), self.question.to_dict())
+        self.assertEqual(questions[1].to_dict(), self.question_2.to_dict())
+
+    def test_get_questions_by_skill_ids_without_fetch_by_difficulty(self):
+        question_services.create_new_question_skill_link(
+            self.editor_id, self.question_id, 'skill_1', 0.3)
+        question_services.create_new_question_skill_link(
+            self.editor_id, self.question_id_1, 'skill_2', 0.8)
+        question_services.create_new_question_skill_link(
+            self.editor_id, self.question_id_2, 'skill_2', 0.5)
+
+        questions = question_services.get_questions_by_skill_ids(
+            4, ['skill_1', 'skill_2'], False)
         questions.sort(key=lambda question: question.last_updated)
 
         self.assertEqual(len(questions), 3)
@@ -134,12 +151,13 @@ class QuestionServicesUnitTest(test_utils.GenericTestBase):
         self.assertEqual(questions[1].to_dict(), self.question_1.to_dict())
         self.assertEqual(questions[2].to_dict(), self.question_2.to_dict())
 
-    def test_get_questions_by_skill_ids_raise_error(self):
+    def test_get_questions_by_skill_ids_raise_error_with_high_question_count(
+            self):
         with self.assertRaisesRegexp(
             Exception, 'Question count is too high, please limit the question '
             'count to %d.' % feconf.MAX_QUESTIONS_FETCHABLE_AT_ONE_TIME):
             question_services.get_questions_by_skill_ids(
-                25, ['skill_1', 'skill_2'])
+                25, ['skill_1', 'skill_2'], False)
 
     def test_create_multi_question_skill_links_for_question(self):
         self.question = self.save_new_question(
@@ -609,3 +627,108 @@ class QuestionServicesUnitTest(test_utils.GenericTestBase):
         skill_ids = [skill.id for skill in skills]
         self.assertItemsEqual(
             skill_ids, ['skill_1', 'skill_2'])
+
+    def test_get_interaction_id_for_question(self):
+        self.assertEqual(
+            question_services.get_interaction_id_for_question(
+                self.question_id), 'TextInput')
+        with self.assertRaisesRegexp(Exception, 'No questions exists with'):
+            question_services.get_interaction_id_for_question('fake_q_id')
+
+
+class QuestionMigrationTests(test_utils.GenericTestBase):
+
+    def test_migrate_question_state_from_v29_to_v30(self):
+        answer_group = {
+            'outcome': {
+                'dest': 'abc',
+                'feedback': {
+                    'content_id': 'feedback_1',
+                    'html': '<p>Feedback</p>'
+                },
+                'labelled_as_correct': True,
+                'param_changes': [],
+                'refresher_exploration_id': None,
+                'missing_prerequisite_skill_id': None
+            },
+            'rule_specs': [{
+                'inputs': {
+                    'x': 'Test'
+                },
+                'rule_type': 'Contains'
+            }],
+            'training_data': [],
+            'tagged_misconception_id': None
+        }
+        question_state_dict = {
+            'content': {
+                'content_id': 'content_1',
+                'html': 'Question 1'
+            },
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {}
+            },
+            'written_translations': {
+                'translations_mapping': {
+                    'explanation': {}
+                }
+            },
+            'interaction': {
+                'answer_groups': [answer_group],
+                'confirmed_unclassified_answers': [],
+                'customization_args': {},
+                'default_outcome': {
+                    'dest': None,
+                    'feedback': {
+                        'content_id': 'feedback_1',
+                        'html': 'Correct Answer'
+                    },
+                    'param_changes': [],
+                    'refresher_exploration_id': None,
+                    'labelled_as_correct': True,
+                    'missing_prerequisite_skill_id': None
+                },
+                'hints': [{
+                    'hint_content': {
+                        'content_id': 'hint_1',
+                        'html': 'Hint 1'
+                    }
+                }],
+                'solution': {
+                    'correct_answer': 'This is the correct answer',
+                    'answer_is_exclusive': False,
+                    'explanation': {
+                        'content_id': 'explanation_1',
+                        'html': 'Solution explanation'
+                    }
+                },
+                'id': 'TextInput'
+            },
+            'param_changes': [],
+            'solicit_answer_details': False,
+            'classifier_model_id': None
+        }
+        question_model = question_models.QuestionModel(
+            id='question_id',
+            question_state_data=question_state_dict,
+            language_code='en',
+            version=0,
+            linked_skill_ids=['skill_id'],
+            question_state_data_schema_version=29)
+        commit_cmd = question_domain.QuestionChange({
+            'cmd': question_domain.CMD_CREATE_NEW
+        })
+        commit_cmd_dicts = [commit_cmd.to_dict()]
+        question_model.commit(
+            'user_id_admin', 'question model created', commit_cmd_dicts)
+
+        current_schema_version_swap = self.swap(
+            feconf, 'CURRENT_STATE_SCHEMA_VERSION', 30)
+
+        with current_schema_version_swap:
+            question = question_services.get_question_from_model(question_model)
+
+        self.assertEqual(question.question_state_data_schema_version, 30)
+
+        answer_groups = question.question_state_data.interaction.answer_groups
+        self.assertEqual(answer_groups[0].tagged_skill_misconception_id, None)

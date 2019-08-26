@@ -17,15 +17,30 @@
 """Implements additional custom Pylint checkers to be used as part of
 presubmit checks.
 """
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import re
-import astroid
-import docstrings_checker  # pylint: disable=relative-import
 
+import astroid
 from pylint import checkers
 from pylint import interfaces
 from pylint.checkers import typecheck
 from pylint.checkers import utils as checker_utils
+
+import python_utils  # isort:skip
+from . import docstrings_checker  # isort:skip
+
+
+def read_from_node(node):
+    """Returns the data read from the ast node in unicode form.
+
+    Args:
+        node: astroid.scoped_nodes.Function. Node to access module content.
+
+    Returns:
+        list(str). The data read from the ast node.
+    """
+    return list(node.stream().readlines())
 
 
 class ExplicitKeywordArgsChecker(checkers.BaseChecker):
@@ -69,9 +84,6 @@ class ExplicitKeywordArgsChecker(checkers.BaseChecker):
 
         # Build the set of keyword arguments and count the positional arguments.
         call_site = astroid.arguments.CallSite.from_call(node)
-        if call_site.has_invalid_arguments() or (
-                call_site.has_invalid_keywords()):
-            return
 
         num_positional_args = len(call_site.positional_arguments)
         keyword_args = list(call_site.keyword_arguments.keys())
@@ -107,10 +119,7 @@ class ExplicitKeywordArgsChecker(checkers.BaseChecker):
         # been called explicitly.
         for [(name, defval), _] in parameters:
             if defval:
-                if name is None:
-                    display_name = '<tuple>'
-                else:
-                    display_name = repr(name)
+                display_name = repr(name)
 
                 if name not in keyword_args and (
                         num_positional_args_unused > (
@@ -122,10 +131,7 @@ class ExplicitKeywordArgsChecker(checkers.BaseChecker):
                     try:
                         func_name = node.func.attrname
                     except AttributeError:
-                        try:
-                            func_name = node.func.name
-                        except AttributeError:
-                            func_name = node.func
+                        func_name = node.func.name
 
                     self.add_message(
                         'non-explicit-keyword-args', node=node,
@@ -162,10 +168,10 @@ class HangingIndentChecker(checkers.BaseChecker):
         Args:
             node: astroid.scoped_nodes.Function. Node to access module content.
         """
-        file_content = node.stream().readlines()
+        file_content = read_from_node(node)
         file_length = len(file_content)
         exclude = False
-        for line_num in xrange(file_length):
+        for line_num in python_utils.RANGE(file_length):
             line = file_content[line_num].lstrip().rstrip()
             if line.startswith('"""') and not line.endswith('"""'):
                 exclude = True
@@ -175,7 +181,7 @@ class HangingIndentChecker(checkers.BaseChecker):
                 continue
             line_length = len(line)
             bracket_count = 0
-            for char_num in xrange(line_length):
+            for char_num in python_utils.RANGE(line_length):
                 char = line[char_num]
                 if char == '(':
                     if bracket_count == 0:
@@ -443,8 +449,6 @@ class DocstringParameterChecker(checkers.BaseChecker):
             return
 
         func_node = node.frame()
-        if not isinstance(func_node, astroid.FunctionDef):
-            return
 
         doc = docstrings_checker.docstringify(func_node.doc)
         if not doc.is_valid() and self.config.accept_no_return_doc:
@@ -475,19 +479,13 @@ class DocstringParameterChecker(checkers.BaseChecker):
                 method definition in the AST.
         """
         func_node = node.frame()
-        if not isinstance(func_node, astroid.FunctionDef):
-            return
 
         doc = docstrings_checker.docstringify(func_node.doc)
         if not doc.is_valid() and self.config.accept_no_yields_doc:
             return
 
-        if doc.supports_yields:
-            doc_has_yields = doc.has_yields()
-            doc_has_yields_type = doc.has_yields_type()
-        else:
-            doc_has_yields = doc.has_returns()
-            doc_has_yields_type = doc.has_rtype()
+        doc_has_yields = doc.has_yields()
+        doc_has_yields_type = doc.has_yields_type()
 
         if not doc_has_yields:
             self.add_message(
@@ -648,7 +646,6 @@ class DocstringParameterChecker(checkers.BaseChecker):
     def _handle_no_raise_doc(self, excs, node):
         """Checks whether the raised exception in a function has been
         documented, add a message otherwise.
-
         Args:
             excs: list(str). A list of exception types.
             node: astroid.scoped_nodes.Function. Node to access module content.
@@ -722,8 +719,6 @@ class ImportOnlyModulesChecker(checkers.BaseChecker):
                     node=node,
                     args=(name, modname),
                 )
-            except astroid.AstroidBuildingException:
-                pass
 
 
 class BackslashContinuationChecker(checkers.BaseChecker):
@@ -750,12 +745,11 @@ class BackslashContinuationChecker(checkers.BaseChecker):
         Args:
             node: astroid.scoped_nodes.Function. Node to access module content.
         """
-        with node.stream() as stream:
-            file_content = stream.readlines()
-            for (line_num, line) in enumerate(file_content):
-                if line.rstrip('\r\n').endswith('\\'):
-                    self.add_message(
-                        'backslash-continuation', line=line_num + 1)
+        file_content = read_from_node(node)
+        for (line_num, line) in enumerate(file_content):
+            if line.rstrip('\r\n').endswith('\\'):
+                self.add_message(
+                    'backslash-continuation', line=line_num + 1)
 
 
 class FunctionArgsOrderChecker(checkers.BaseChecker):
@@ -888,7 +882,7 @@ class SingleCharAndNewlineAtEOFChecker(checkers.BaseChecker):
             node: astroid.scoped_nodes.Function. Node to access module content.
         """
 
-        file_content = node.stream().readlines()
+        file_content = read_from_node(node)
         file_length = len(file_content)
 
         if file_length == 1 and len(file_content[0]) == 1:

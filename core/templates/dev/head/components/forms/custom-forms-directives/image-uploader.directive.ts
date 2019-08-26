@@ -19,9 +19,7 @@
 require('domain/utilities/UrlInterpolationService.ts');
 require('services/IdGenerationService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('imageUploader', [
+angular.module('oppia').directive('imageUploader', [
   'IdGenerationService', 'UrlInterpolationService',
   function(IdGenerationService, UrlInterpolationService) {
     return {
@@ -105,8 +103,9 @@ oppia.directive('imageUploader', [
           'image-uploader-file-input' + IdGenerationService.generateNewId());
         angular.element(document).on(
           'change', '.' + scope.fileInputClassName, function(evt) {
-            var file = evt.currentTarget.files[0];
-            var filename = evt.target.value.split(/(\\|\/)/g).pop();
+            var file = (<HTMLInputElement>evt.currentTarget).files[0];
+            var filename = (<HTMLInputElement>evt.target).value.split(
+              /(\\|\/)/g).pop();
             scope.errorMessage = validateUploadedFile(file, filename);
             if (!scope.errorMessage) {
               // Only fire this event if validations pass.

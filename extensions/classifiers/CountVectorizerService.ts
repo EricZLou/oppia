@@ -23,27 +23,32 @@
  * propagated here.
  */
 
-var oppia = require('AppInit.ts').module;
+import { downgradeInjectable } from '@angular/upgrade/static';
+import { Injectable } from '@angular/core';
 
-oppia.factory('CountVectorizerService', [function() {
-  return {
-    vectorize: function(tokens, vocabulary) {
-      var vectorLength = Object.keys(vocabulary).length;
-      var vector = [];
-      for (var i = 0; i < vectorLength; i++) {
-        vector.push(0);
-      }
-      if (tokens === null) {
-        return vector;
-      }
-
-      tokens.forEach(function(token) {
-        if (vocabulary.hasOwnProperty(token)) {
-          vector[vocabulary[token]] += 1;
-        }
-      });
-
+@Injectable({
+  providedIn: 'root'
+})
+export class CountVectorizerService {
+  vectorize(tokens, vocabulary) {
+    var vectorLength = Object.keys(vocabulary).length;
+    var vector = [];
+    for (var i = 0; i < vectorLength; i++) {
+      vector.push(0);
+    }
+    if (tokens === null) {
       return vector;
     }
-  };
-}]);
+
+    tokens.forEach(function(token) {
+      if (vocabulary.hasOwnProperty(token)) {
+        vector[vocabulary[token]] += 1;
+      }
+    });
+
+    return vector;
+  }
+}
+
+angular.module('oppia').factory(
+  'CountVectorizerService', downgradeInjectable(CountVectorizerService));

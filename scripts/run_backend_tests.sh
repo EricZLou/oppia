@@ -85,13 +85,8 @@ for arg in "$@"; do
   fi
 done
 
-# Compile typescript files
-echo "Compiling typescript..."
-$NODE_MODULE_DIR/typescript/bin/tsc --project .
-
 echo "Compiling webpack..."
 $NODE_MODULE_DIR/webpack/bin/webpack.js --config webpack.prod.config.ts
-$PYTHON_CMD scripts/build.py
 
 $PYTHON_CMD scripts/backend_tests.py $@
 
@@ -99,6 +94,9 @@ for arg in "$@"; do
   if [ "$arg" == "--generate_coverage_report" ]; then
     $PYTHON_CMD $COVERAGE_HOME/coverage combine
     $PYTHON_CMD $COVERAGE_HOME/coverage report --omit="$TOOLS_DIR/*","$THIRD_PARTY_DIR/*","/usr/share/*" --show-missing
+
+    echo "Generating xml coverage report..."
+    $PYTHON_CMD $COVERAGE_HOME/coverage xml
   fi
 done
 

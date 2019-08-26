@@ -16,12 +16,13 @@
  * @fileoverview Validator service for the number with units interaction.
  */
 
+// TODO(#7403): Convert this to partial imports.
+import math from 'mathjs';
+
 require('domain/objects/NumberWithUnitsObjectFactory.ts');
 require('interactions/baseInteractionValidationService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.factory('NumberWithUnitsValidationService', [
+angular.module('oppia').factory('NumberWithUnitsValidationService', [
   'NumberWithUnitsObjectFactory', 'baseInteractionValidationService',
   'WARNING_TYPES',
   function(NumberWithUnitsObjectFactory, baseInteractionValidationService,
@@ -72,8 +73,17 @@ oppia.factory('NumberWithUnitsValidationService', [
           }
           var earlierInputString = earlierInput.toMathjsCompatibleString();
           var laterInputString = laterInput.toMathjsCompatibleString();
-          return math.unit(laterInputString).equals(math.unit(
-            earlierInputString));
+          try {
+            return math.unit(laterInputString).equals(math.unit(
+              earlierInputString));
+          } catch (e) {
+            var additionalInfo = (
+              '\nlaterInput: ' + JSON.stringify(laterInput.toDict()) +
+              '\nearlierInput: ' + JSON.stringify(earlierInput.toDict())
+            );
+            e.message += additionalInfo;
+            throw e;
+          }
         };
 
         var ranges = [];

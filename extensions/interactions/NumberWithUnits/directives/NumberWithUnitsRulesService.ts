@@ -16,15 +16,16 @@
  * @fileoverview Rules service for the interaction.
  */
 
+// TODO(#7403): Convert this to partial imports.
+import math from 'mathjs';
+
 require('domain/objects/FractionObjectFactory.ts');
 require('domain/objects/NumberWithUnitsObjectFactory.ts');
 
 // Rules service for number with units interaction.
-var oppia = require('AppInit.ts').module;
-
-oppia.factory('NumberWithUnitsRulesService', [
-  'FractionObjectFactory', 'NumberWithUnitsObjectFactory',
-  function(FractionObjectFactory, NumberWithUnitsObjectFactory) {
+angular.module('oppia').factory('NumberWithUnitsRulesService', [
+  'NumberWithUnitsObjectFactory',
+  function(NumberWithUnitsObjectFactory) {
     try {
       NumberWithUnitsObjectFactory.createCurrencyUnits();
     } catch (parsingError) {}

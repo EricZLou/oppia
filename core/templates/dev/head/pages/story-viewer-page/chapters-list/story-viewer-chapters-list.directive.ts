@@ -25,11 +25,10 @@ require('domain/story_viewer/StoryPlaythroughObjectFactory.ts');
 require('domain/utilities/UrlInterpolationService.ts');
 require('services/AlertsService.ts');
 require('services/PageTitleService.ts');
+require('services/UserService.ts');
 require('services/contextual/UrlService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.animation('.oppia-story-animate-slide', function() {
+angular.module('oppia').animation('.oppia-story-animate-slide', function() {
   return {
     enter: function(element) {
       element.hide().slideDown();
@@ -40,8 +39,8 @@ oppia.animation('.oppia-story-animate-slide', function() {
   };
 });
 
-oppia.directive('storyViewerChaptersList', ['UrlInterpolationService',
-  function(UrlInterpolationService) {
+angular.module('oppia').directive('storyViewerChaptersList', [
+  'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',
       scope: {},
@@ -55,14 +54,16 @@ oppia.directive('storyViewerChaptersList', ['UrlInterpolationService',
       controller: [
         '$anchorScroll', '$http', '$location', 'AlertsService',
         'PageTitleService', 'StoryPlaythroughObjectFactory',
-        'UrlInterpolationService', 'UrlService',
+        'UrlInterpolationService', 'UrlService', 'UserService',
         function(
             $anchorScroll, $http, $location, AlertsService,
             PageTitleService, StoryPlaythroughObjectFactory,
-            UrlInterpolationService, UrlService) {
+            UrlInterpolationService, UrlService, UserService) {
           var ctrl = this;
           ctrl.storyPlaythroughObject = ctrl.getPlaythroughObject();
-          ctrl.isLoggedIn = GLOBALS.isLoggedIn;
+          UserService.getUserInfoAsync().then(function(userInfo) {
+            ctrl.isLoggedIn = userInfo.isLoggedIn();
+          });
           ctrl.explorationCardIsShown = false;
           ctrl.getStaticImageUrl = UrlInterpolationService.getStaticImageUrl;
           // The pathIconParameters is an array containing the co-ordinates,

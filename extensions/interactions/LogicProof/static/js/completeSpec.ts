@@ -16,6 +16,11 @@
  * @fileoverview Complete tests for LogicProof interaction JS.
  */
 
+import logicProofStudent from 'interactions/LogicProof/static/js/student.ts';
+import logicProofTeacher from 'interactions/LogicProof/static/js/teacher.ts';
+import LOGIC_PROOF_DEFAULT_QUESTION_DATA from
+  'interactions/LogicProof/static/js/generatedDefaultData.ts';
+
 describe('Full system', function() {
   var sharedErrorWrapper = function(message, line, code, category) {
     return {
@@ -41,8 +46,8 @@ describe('Full system', function() {
   it('should accept fully correct proofs', function() {
     expect(completeCheck('p', 'p', 'we know p')).toBeUndefined();
 
-    // TODO: add back additional tests from commit 2d9335019521 when speed
-    // issues are fixed.
+    // TODO(kevinlee12 @vojtechjelinek): add back additional tests from
+    // commit 2d9335019521 when speed issues are fixed.
 
     expect(
       completeCheck('∀x.(A(x)∧B(x))', '(∀x.A(x))∧(∀x.B(x))', [

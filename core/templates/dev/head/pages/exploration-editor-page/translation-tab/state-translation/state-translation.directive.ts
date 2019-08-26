@@ -27,6 +27,7 @@ require(
 );
 
 require('domain/utilities/UrlInterpolationService.ts');
+require('filters/format-rte-preview.filter.ts');
 require('filters/string-utility-filters/convert-to-plain-text.filter.ts');
 require('filters/parameterize-rule-description.filter.ts');
 require('filters/string-utility-filters/truncate.filter.ts');
@@ -49,11 +50,10 @@ require(
   'components/state-editor/state-editor-properties-services/' +
   'state-editor.service.ts');
 
-require('pages/exploration-editor-page/exploration-editor-page.constants.ts');
+require(
+  'pages/exploration-editor-page/exploration-editor-page.constants.ajs.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('stateTranslation', [
+angular.module('oppia').directive('stateTranslation', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',

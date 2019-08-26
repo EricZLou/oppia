@@ -1,5 +1,5 @@
 <div class="oppia-dashboard-container improvements-tab-dashboard" style="position: relative;">
-  <div class="oppia-dashboard-aggregated-stats" style="padding-top: 30px">
+  <div class="oppia-dashboard-aggregated-stats" style="padding-top: 30px; margin-bottom: 30px">
     <md-card layout="row" style="margin: 0">
       <div class="open-issues stats-card">
         <p class="stat-description">Open Cards</p>
@@ -7,25 +7,52 @@
       </div>
     </md-card>
   </div>
-  <div>
-    <md-card ng-repeat="card in getCards()" ng-if="card.isOpen()"
-             class="oppia-editor-card oppia-improvement-card md-default-theme">
-      <div>
-        <h2 style="margin-top: 0"><[card.getTitle()]></h2>
-        <hr>
+  <!-- Open Cards -->
+  <md-card ng-repeat="card in getCards() | orderBy:getCardTitle:true"
+           ng-if="isCardOpen(card) && !isCardObsolete(card)"
+           class="md-default-theme oppia-improvement-card" style="background-color: white">
+    <div class="modal-header oppia-improvement-card-header">
+      <h2 class="oppia-improvement-card-header-title"><[card.getTitle()]></h2>
+      <div class="oppia-improvement-card-header-status-pill">
+        <span ng-class="getStatusCssClass(card.getStatus())">
+          <[getHumanReadableStatus(card.getStatus())]>
+        </span>
       </div>
-      <div ng-switch="card.getDirectiveType()">
-        <playthrough-improvement-card ng-switch-when="playthrough"
-                                      data="card.getDirectiveData()">
-        </playthrough-improvement-card>
+    </div>
+    <div ng-show="isCardOpen(card)" ng-switch="card.getDirectiveType()" class="modal-body">
+      <feedback-improvement-card ng-switch-when="feedback" data="card.getDirectiveData()">
+      </feedback-improvement-card>
+      <playthrough-improvement-card ng-switch-when="playthrough" data="card.getDirectiveData()">
+      </playthrough-improvement-card>
+      <suggestion-improvement-card ng-switch-when="suggestion" data="card.getDirectiveData()">
+      </suggestion-improvement-card>
+    </div>
+    <div class="modal-footer oppia-improvement-card-footer">
+      <button ng-repeat="actionButton in card.getActionButtons()" ng-click="actionButton.execute()"
+              ng-disabled="!actionButton.isEnabled()"
+              class="btn <[actionButton.getCssClass()]>" style="margin-left: 15px">
+        <[actionButton.getText()]>
+      </button>
+    </div>
+  </md-card>
+  <md-card ng-repeat="card in getCards() | orderBy:getCardTitle:true"
+           ng-if="!isCardOpen(card) && !isCardObsolete(card)"
+           class="md-default-theme oppia-improvement-closed-card"
+           style="background-color: rgb(218,218,218)">
+    <div class="oppia-improvement-closed-card-header">
+      <h2 class="oppia-improvement-card-header-title"><[card.getTitle()]></h2>
+      <div class="oppia-improvement-card-header-status-pill">
+        <span ng-class="getStatusCssClass(card.getStatus())">
+          <[getHumanReadableStatus(card.getStatus())]>
+        </span>
       </div>
-      <div class="text-right">
-        <button ng-repeat="actionButton in card.getActionButtons()"
-                ng-click="actionButton.execute()"
-                class="btn <[actionButton.getCssClass()]>" style="margin-left: 15px">
-          <[actionButton.getText()]>
-        </button>
-      </div>
-    </md-card>
-  </div>
+    </div>
+    <div class="oppia-improvement-card-footer">
+      <button ng-repeat="actionButton in card.getActionButtons()" ng-click="actionButton.execute()"
+              ng-disabled="!actionButton.isEnabled()"
+              class="btn <[actionButton.getCssClass()]>" style="margin-left: 15px">
+        <[actionButton.getText()]>
+      </button>
+    </div>
+  </md-card>
 </div>

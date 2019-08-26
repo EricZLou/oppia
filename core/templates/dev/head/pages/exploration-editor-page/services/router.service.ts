@@ -25,9 +25,7 @@ require(
   'state-editor.service.ts');
 require('services/ExplorationFeaturesService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.factory('RouterService', [
+angular.module('oppia').factory('RouterService', [
   '$interval', '$location', '$rootScope', '$timeout', '$window',
   'ExplorationFeaturesService', 'ExplorationInitStateNameService',
   'ExplorationStatesService', 'StateEditorService',
@@ -94,9 +92,16 @@ oppia.factory('RouterService', [
       } else if (newPath === TABS.STATS.path) {
         activeTabName = TABS.STATS.name;
         $rootScope.$broadcast('refreshStatisticsTab');
-      } else if (newPath === TABS.IMPROVEMENTS.path &&
-                 isImprovementsTabEnabled()) {
+      } else if (newPath === TABS.IMPROVEMENTS.path) {
         activeTabName = TABS.IMPROVEMENTS.name;
+        var waitToCheckThatImprovementsTabIsEnabled = $interval(function() {
+          if (ExplorationFeaturesService.isInitialized()) {
+            $interval.cancel(waitToCheckThatImprovementsTabIsEnabled);
+            if (!ExplorationFeaturesService.isImprovementsTabEnabled()) {
+              RouterService.navigateToMainTab(null);
+            }
+          }
+        }, 5);
       } else if (newPath === TABS.HISTORY.path) {
         // TODO(sll): Do this on-hover rather than on-click.
         $rootScope.$broadcast('refreshVersionHistory', {
@@ -105,6 +110,14 @@ oppia.factory('RouterService', [
         activeTabName = TABS.HISTORY.name;
       } else if (newPath === TABS.FEEDBACK.path) {
         activeTabName = TABS.FEEDBACK.name;
+        var waitToCheckThatFeedbackTabIsEnabled = $interval(function() {
+          if (ExplorationFeaturesService.isInitialized()) {
+            $interval.cancel(waitToCheckThatFeedbackTabIsEnabled);
+            if (ExplorationFeaturesService.isImprovementsTabEnabled()) {
+              RouterService.navigateToMainTab(null);
+            }
+          }
+        }, 5);
       } else if (newPath.indexOf('/gui/') === 0) {
         activeTabName = TABS.MAIN.name;
         _doNavigationWithState(newPath, SLUG_GUI);
@@ -126,11 +139,9 @@ oppia.factory('RouterService', [
             StateEditorService.setActiveStateName(putativeStateName);
             if (pathType === SLUG_GUI) {
               $rootScope.$broadcast('refreshStateEditor');
+              // Fire an event to center the Graph in the Editor.
+              $rootScope.$broadcast('centerGraph');
             }
-            // TODO(sll): Fire an event to center the graph, in the case
-            // where another tab is loaded first and then the user switches
-            // to the editor tab. We used to redraw the graph completely but
-            // this is taking lots of time and is probably not worth it.
           } else {
             $location.path(pathBase +
                            ExplorationInitStateNameService.savedMemento);
@@ -184,8 +195,7 @@ oppia.factory('RouterService', [
           currentPath === TABS.TRANSLATION.path ||
           currentPath === TABS.PREVIEW.path ||
           currentPath === TABS.STATS.path ||
-          (isImprovementsTabEnabled() &&
-            currentPath === TABS.IMPROVEMENTS.path) ||
+          currentPath === TABS.IMPROVEMENTS.path ||
           currentPath === TABS.SETTINGS.path ||
           currentPath === TABS.HISTORY.path ||
           currentPath === TABS.FEEDBACK.path);

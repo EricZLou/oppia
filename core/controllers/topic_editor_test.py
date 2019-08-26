@@ -13,8 +13,10 @@
 # limitations under the License.
 
 """Tests for the topic editor page."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from core.domain import skill_services
+from core.domain import story_fetchers
 from core.domain import story_services
 from core.domain import topic_domain
 from core.domain import topic_services
@@ -92,25 +94,33 @@ class TopicEditorStoryHandlerTests(BaseTopicEditorControllerTests):
             additional_story_id, self.admin_id, 'another title',
             'another description', 'another note', topic_id)
 
+        topic_services.publish_story(
+            topic_id, canonical_story_id, self.admin_id)
+
         response = self.get_json(
             '%s/%s' % (feconf.TOPIC_EDITOR_STORY_URL, topic_id))
-        canonical_story_summary_dicts = response[
+        canonical_story_summary_dict = response[
             'canonical_story_summary_dicts'][0]
-        additional_story_summary_dicts = response[
+        additional_story_summary_dict = response[
             'additional_story_summary_dicts'][0]
 
         self.assertEqual(
-            canonical_story_summary_dicts['description'], 'description')
-        self.assertEqual(canonical_story_summary_dicts['title'], 'title')
+            canonical_story_summary_dict['description'], 'description')
+        self.assertEqual(canonical_story_summary_dict['title'], 'title')
         self.assertEqual(
-            canonical_story_summary_dicts['id'], canonical_story_id)
+            canonical_story_summary_dict['id'], canonical_story_id)
         self.assertEqual(
-            additional_story_summary_dicts['description'],
+            canonical_story_summary_dict['story_is_published'], True)
+
+        self.assertEqual(
+            additional_story_summary_dict['description'],
             'another description')
         self.assertEqual(
-            additional_story_summary_dicts['title'], 'another title')
+            additional_story_summary_dict['title'], 'another title')
         self.assertEqual(
-            additional_story_summary_dicts['id'], additional_story_id)
+            additional_story_summary_dict['id'], additional_story_id)
+        self.assertEqual(
+            additional_story_summary_dict['story_is_published'], False)
 
         self.logout()
 
@@ -124,7 +134,7 @@ class TopicEditorStoryHandlerTests(BaseTopicEditorControllerTests):
         story_id = json_response['storyId']
         self.assertEqual(len(story_id), 12)
         self.assertIsNotNone(
-            story_services.get_story_by_id(story_id, strict=False))
+            story_fetchers.get_story_by_id(story_id, strict=False))
         self.logout()
 
 
@@ -163,8 +173,10 @@ class SubtopicPageEditorTests(BaseTopicEditorControllerTests):
                 'html': '',
                 'content_id': 'content'
             },
-            'content_ids_to_audio_translations': {
-                'content': {}
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {
+                    'content': {}
+                }
             },
             'written_translations': {
                 'translations_mapping': {
@@ -189,8 +201,10 @@ class SubtopicPageEditorTests(BaseTopicEditorControllerTests):
                 'html': '',
                 'content_id': 'content'
             },
-            'content_ids_to_audio_translations': {
-                'content': {}
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {
+                    'content': {}
+                }
             },
             'written_translations': {
                 'translations_mapping': {
@@ -211,8 +225,10 @@ class SubtopicPageEditorTests(BaseTopicEditorControllerTests):
                 'html': '',
                 'content_id': 'content'
             },
-            'content_ids_to_audio_translations': {
-                'content': {}
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {
+                    'content': {}
+                }
             },
             'written_translations': {
                 'translations_mapping': {
@@ -355,14 +371,18 @@ class TopicEditorTests(BaseTopicEditorControllerTests):
                 'cmd': 'update_subtopic_page_property',
                 'property_name': 'page_contents_audio',
                 'old_value': {
-                    'content': {}
+                    'voiceovers_mapping': {
+                        'content': {}
+                    }
                 },
                 'new_value': {
-                    'content': {
-                        'en': {
-                            'filename': 'test.mp3',
-                            'file_size_bytes': 100,
-                            'needs_update': False
+                    'voiceovers_mapping': {
+                        'content': {
+                            'en': {
+                                'filename': 'test.mp3',
+                                'file_size_bytes': 100,
+                                'needs_update': False
+                            }
                         }
                     }
                 },
@@ -393,8 +413,10 @@ class TopicEditorTests(BaseTopicEditorControllerTests):
                 'html': '<p>New Data</p>',
                 'content_id': 'content'
             },
-            'content_ids_to_audio_translations': {
-                'content': {}
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {
+                    'content': {}
+                }
             },
             'written_translations': {
                 'translations_mapping': {
@@ -411,12 +433,14 @@ class TopicEditorTests(BaseTopicEditorControllerTests):
                 'html': '<p>New Value</p>',
                 'content_id': 'content'
             },
-            'content_ids_to_audio_translations': {
-                'content': {
-                    'en': {
-                        'file_size_bytes': 100,
-                        'filename': 'test.mp3',
-                        'needs_update': False
+            'recorded_voiceovers': {
+                'voiceovers_mapping': {
+                    'content': {
+                        'en': {
+                            'file_size_bytes': 100,
+                            'filename': 'test.mp3',
+                            'needs_update': False
+                        }
                     }
                 }
             },
@@ -519,14 +543,18 @@ class TopicEditorTests(BaseTopicEditorControllerTests):
                 'cmd': 'update_subtopic_page_property',
                 'property_name': 'page_contents_audio',
                 'old_value': {
-                    'content': {}
+                    'voiceovers_mapping': {
+                        'content': {}
+                    }
                 },
                 'new_value': {
-                    'content': {
-                        'en': {
-                            'filename': 'test.mp3',
-                            'file_size_bytes': 100,
-                            'needs_update': False
+                    'voiceovers_mapping': {
+                        'content': {
+                            'en': {
+                                'filename': 'test.mp3',
+                                'file_size_bytes': 100,
+                                'needs_update': False
+                            }
                         }
                     }
                 },

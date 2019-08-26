@@ -16,28 +16,31 @@
  * @fileoverview Unit tests for music notes input validation service.
  */
 
-require(
-  'interactions/MusicNotesInput/directives/' +
-  'MusicNotesInputValidationService.ts');
+import { TestBed } from '@angular/core/testing';
 
-describe('MusicNotesInputValidationService', function() {
-  var validatorService, WARNING_TYPES;
+import { AnswerGroup, AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { MusicNotesInputValidationService } from
+  'interactions/MusicNotesInput/directives/MusicNotesInputValidationService';
+import { Outcome, OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
 
-  var currentState;
-  var goodAnswerGroups, goodDefaultOutcome;
-  var oof, agof;
+describe('MusicNotesInputValidationService', () => {
+  let validatorService: MusicNotesInputValidationService;
 
-  beforeEach(function() {
-    angular.mock.module('oppia');
-  });
+  let currentState: string;
+  let goodAnswerGroups: AnswerGroup[], goodDefaultOutcome: Outcome;
+  let oof: OutcomeObjectFactory, agof: AnswerGroupObjectFactory;
 
-  beforeEach(angular.mock.inject(function($injector) {
-    validatorService = $injector.get('MusicNotesInputValidationService');
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [MusicNotesInputValidationService]
+    });
 
-    WARNING_TYPES = $injector.get('WARNING_TYPES');
+    validatorService = TestBed.get(MusicNotesInputValidationService);
 
-    oof = $injector.get('OutcomeObjectFactory');
-    agof = $injector.get('AnswerGroupObjectFactory');
+    oof = TestBed.get(OutcomeObjectFactory);
+    agof = TestBed.get(AnswerGroupObjectFactory);
 
     currentState = 'First State';
     goodDefaultOutcome = oof.createFromBackendDict({
@@ -52,9 +55,9 @@ describe('MusicNotesInputValidationService', function() {
       missing_prerequisite_skill_id: null
     });
     goodAnswerGroups = [agof.createNew([], goodDefaultOutcome, false, null)];
-  }));
+  });
 
-  it('should be able to perform basic validation', function() {
+  it('should be able to perform basic validation', () => {
     var warnings = validatorService.getAllWarnings(
       currentState, {}, goodAnswerGroups, goodDefaultOutcome);
     expect(warnings).toEqual([]);

@@ -16,14 +16,18 @@
  * @fileoverview Directive for a schema-based editor for HTML.
  */
 
+require('components/ck-editor-helpers/ck-editor-4-rte.directive.ts');
+require('components/ck-editor-helpers/ck-editor-5-rte.directive.ts');
+require('components/ck-editor-helpers/ck-editor-4-widgets.initializer.ts');
+
 require('domain/utilities/UrlInterpolationService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('schemaBasedHtmlEditor', [
+angular.module('oppia').directive('schemaBasedHtmlEditor', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
-      scope: {
+      restrict: 'E',
+      scope: {},
+      bindToController: {
         localValue: '=',
         isDisabled: '&',
         labelForFocusTarget: '&',
@@ -32,6 +36,11 @@ oppia.directive('schemaBasedHtmlEditor', [
       templateUrl: UrlInterpolationService.getDirectiveTemplateUrl(
         '/components/forms/schema-based-editors/' +
         'schema-based-html-editor.directive.html'),
-      restrict: 'E',
+      controllerAs: '$ctrl',
+      controller: ['$scope', 'CURRENT_RTE_IS_CKEDITOR_4',
+        function($scope, CURRENT_RTE_IS_CKEDITOR_4) {
+          var ctrl = this;
+          ctrl.currentRteIsCKEditor4 = CURRENT_RTE_IS_CKEDITOR_4;
+        }]
     };
   }]);

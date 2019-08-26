@@ -15,9 +15,11 @@
 """Registry for Oppia suggestions. Contains a BaseSuggestion class and
 subclasses for each type of suggestion.
 """
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from constants import constants
 from core.domain import exp_domain
+from core.domain import exp_fetchers
 from core.domain import exp_services
 from core.domain import question_domain
 from core.domain import question_services
@@ -27,12 +29,13 @@ from core.domain import state_domain
 from core.domain import user_services
 from core.platform import models
 import feconf
+import python_utils
 import utils
 
 (suggestion_models,) = models.Registry.import_models([models.NAMES.suggestion])
 
 
-class BaseSuggestion(object):
+class BaseSuggestion(python_utils.OBJECT):
     """Base class for a suggestion.
 
     Attributes:
@@ -131,7 +134,7 @@ class BaseSuggestion(object):
                 'Expected target_type to be among allowed choices, '
                 'received %s' % self.target_type)
 
-        if not isinstance(self.target_id, basestring):
+        if not isinstance(self.target_id, python_utils.BASESTRING):
             raise utils.ValidationError(
                 'Expected target_id to be a string, received %s' % type(
                     self.target_id))
@@ -146,18 +149,18 @@ class BaseSuggestion(object):
                 'Expected status to be among allowed choices, '
                 'received %s' % self.status)
 
-        if not isinstance(self.author_id, basestring):
+        if not isinstance(self.author_id, python_utils.BASESTRING):
             raise utils.ValidationError(
                 'Expected author_id to be a string, received %s' % type(
                     self.author_id))
 
-        if not isinstance(self.final_reviewer_id, basestring):
+        if not isinstance(self.final_reviewer_id, python_utils.BASESTRING):
             if self.final_reviewer_id:
                 raise utils.ValidationError(
                     'Expected final_reviewer_id to be a string, received %s' %
                     type(self.final_reviewer_id))
 
-        if not isinstance(self.score_category, basestring):
+        if not isinstance(self.score_category, python_utils.BASESTRING):
             raise utils.ValidationError(
                 'Expected score_category to be a string, received %s' % type(
                     self.score_category))
@@ -300,7 +303,7 @@ class SuggestionEditStateContent(BaseSuggestion):
         before accepting the suggestion.
         """
         self.validate()
-        states = exp_services.get_exploration_by_id(self.target_id).states
+        states = exp_fetchers.get_exploration_by_id(self.target_id).states
         if self.change.state_name not in states:
             raise utils.ValidationError(
                 'Expected %s to be a valid state name' %
@@ -314,7 +317,7 @@ class SuggestionEditStateContent(BaseSuggestion):
                 suggestion.
         """
         change = self.change
-        exploration = exp_services.get_exploration_by_id(self.target_id)
+        exploration = exp_fetchers.get_exploration_by_id(self.target_id)
         old_content = (
             exploration.states[self.change.state_name].content.to_dict())
 
@@ -325,7 +328,7 @@ class SuggestionEditStateContent(BaseSuggestion):
 
     def populate_old_value_of_change(self):
         """Populates old value of the change."""
-        exploration = exp_services.get_exploration_by_id(self.target_id)
+        exploration = exp_fetchers.get_exploration_by_id(self.target_id)
         if self.change.state_name not in exploration.states:
             # As the state doesn't exist now, we cannot find the content of the
             # state to populate the old_value field. So we set it as None.

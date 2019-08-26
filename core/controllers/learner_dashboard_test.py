@@ -13,8 +13,10 @@
 # limitations under the License.
 
 """Tests for the learner dashboard and the notifications dashboard."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from core.domain import exp_domain
+from core.domain import exp_fetchers
 from core.domain import exp_services
 from core.domain import feedback_services
 from core.domain import learner_progress_services
@@ -276,6 +278,16 @@ class LearnerDashboardHandlerTests(test_utils.GenericTestBase):
         self.assertEqual(thread.entity_type, 'exploration')
         self.logout()
 
+    def test_learner_dashboard_page(self):
+        self.login(self.OWNER_EMAIL)
+
+        response = self.get_html_response(feconf.LEARNER_DASHBOARD_URL)
+        self.assertIn(
+            '<title itemprop="name">Learner Dashboard - Oppia</title>',
+            response.body)
+
+        self.logout()
+
 
 class LearnerDashboardFeedbackThreadHandlerTests(test_utils.GenericTestBase):
 
@@ -410,7 +422,7 @@ class LearnerDashboardFeedbackThreadHandlerTests(test_utils.GenericTestBase):
 
         suggestion_thread = feedback_services.get_thread(thread_id)
         suggestion = suggestion_services.get_suggestion_by_id(thread_id)
-        exploration = exp_services.get_exploration_by_id(self.EXP_ID_1)
+        exploration = exp_fetchers.get_exploration_by_id(self.EXP_ID_1)
         current_content_html = (
             exploration.states[
                 suggestion.change.state_name].content.html)

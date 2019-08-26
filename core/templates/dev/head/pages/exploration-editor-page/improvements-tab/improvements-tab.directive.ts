@@ -19,15 +19,24 @@
 
 require(
   'pages/exploration-editor-page/improvements-tab/' +
+  'feedback-improvement-card/feedback-improvement-card.directive.ts'
+);
+require(
+  'pages/exploration-editor-page/improvements-tab/' +
   'playthrough-improvement-card/playthrough-improvement-card.directive.ts'
+);
+require(
+  'pages/exploration-editor-page/improvements-tab/' +
+  'suggestion-improvement-card/suggestion-improvement-card.directive.ts'
 );
 
 require('domain/utilities/UrlInterpolationService.ts');
 require('services/ImprovementCardService.ts');
+require(
+  'pages/exploration-editor-page/improvements-tab/services/' +
+  'improvements-display.service.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('improvementsTab', [
+angular.module('oppia').directive('improvementsTab', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',
@@ -36,20 +45,37 @@ oppia.directive('improvementsTab', [
         '/pages/exploration-editor-page/improvements-tab/' +
         'improvements-tab.directive.html'),
       controller: [
-        '$scope', 'ImprovementCardService',
-        function($scope, ImprovementCardService) {
+        '$scope', 'ImprovementCardService', 'ImprovementsDisplayService',
+        function($scope, ImprovementCardService, ImprovementsDisplayService) {
           var fetchedCards = [];
           ImprovementCardService.fetchCards().then(function(cards) {
             fetchedCards = cards;
           });
 
+          $scope.getStatusCssClass =
+            ImprovementsDisplayService.getStatusCssClass;
+
+          $scope.getHumanReadableStatus =
+            ImprovementsDisplayService.getHumanReadableStatus;
+
           $scope.getCards = function() {
             return fetchedCards;
           };
+
+          $scope.isCardOpen = function(card) {
+            return ImprovementsDisplayService.isOpen(card.getStatus());
+          };
+
+          $scope.getCardTitle = function(card) {
+            return card.getTitle();
+          };
+
+          $scope.isCardObsolete = function(card) {
+            return card.isObsolete();
+          };
+
           $scope.getOpenCardCount = function() {
-            return fetchedCards.filter(function(card) {
-              return card.isOpen();
-            }).length;
+            return fetchedCards.filter($scope.isCardOpen).length;
           };
         }
       ],

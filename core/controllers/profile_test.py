@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Tests for the profile page."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
+
 import re
 
 from constants import constants
@@ -595,6 +597,17 @@ class ProfileDataHandlerTests(test_utils.GenericTestBase):
         self.assertEqual(response['user_bio'], 'My new editor bio')
         self.assertEqual(response['subject_interests'], ['editor', 'editing'])
 
+    def test_preferences_page(self):
+        self.signup(self.EDITOR_EMAIL, username=self.EDITOR_USERNAME)
+        self.login(self.EDITOR_EMAIL)
+
+        response = self.get_html_response(feconf.PREFERENCES_URL)
+        self.assertIn(
+            '<title itemprop="name">Preferences - Oppia</title>',
+            response.body)
+
+        self.logout()
+
 
 class FirstContributionDateTests(test_utils.GenericTestBase):
 
@@ -842,6 +855,7 @@ class UserInfoHandlerTests(test_utils.GenericTestBase):
             'can_create_collections': False,
             'preferred_site_language_code': None,
             'username': self.EDITOR_USERNAME,
+            'email': self.EDITOR_EMAIL,
             'user_is_logged_in': True}, json_response)
         self.logout()
 

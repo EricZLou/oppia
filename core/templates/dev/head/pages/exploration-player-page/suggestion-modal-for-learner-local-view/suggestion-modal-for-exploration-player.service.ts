@@ -16,6 +16,10 @@
  * @fileoverview Service to display suggestion modal in learner local view.
  */
 
+require('components/ck-editor-helpers/ck-editor-4-rte.directive.ts');
+require('components/ck-editor-helpers/ck-editor-5-rte.directive.ts');
+require('components/ck-editor-helpers/ck-editor-4-widgets.initializer.ts');
+
 require('domain/utilities/UrlInterpolationService.ts');
 require('pages/exploration-player-page/services/exploration-engine.service.ts');
 require('pages/exploration-player-page/services/player-position.service.ts');
@@ -23,9 +27,7 @@ require('pages/exploration-player-page/services/player-transcript.service.ts');
 require('services/AlertsService.ts');
 require('services/SuggestionModalService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.factory('SuggestionModalForExplorationPlayerService', [
+angular.module('oppia').factory('SuggestionModalForExplorationPlayerService', [
   '$http', '$uibModal', 'AlertsService', 'UrlInterpolationService',
   function($http, $uibModal, AlertsService, UrlInterpolationService) {
     var _templateUrl = UrlInterpolationService.getDirectiveTemplateUrl(
@@ -40,12 +42,12 @@ oppia.factory('SuggestionModalForExplorationPlayerService', [
         resolve: {},
         controller: [
           '$scope', '$timeout', '$uibModalInstance', 'ExplorationEngineService',
-          'PlayerPositionService', 'PlayerTranscriptService',
-          'SuggestionModalService',
+          'CURRENT_RTE_IS_CKEDITOR_4', 'PlayerPositionService',
+          'PlayerTranscriptService', 'SuggestionModalService',
           function(
               $scope, $timeout, $uibModalInstance, ExplorationEngineService,
-              PlayerPositionService, PlayerTranscriptService,
-              SuggestionModalService) {
+              CURRENT_RTE_IS_CKEDITOR_4, PlayerPositionService,
+              PlayerTranscriptService, SuggestionModalService) {
             var stateName = PlayerPositionService.getCurrentStateName();
             var displayedCard = PlayerTranscriptService.getCard(
               PlayerPositionService.getDisplayedCardIndex());
@@ -64,6 +66,9 @@ oppia.factory('SuggestionModalForExplorationPlayerService', [
             $scope.cancelSuggestion = function() {
               SuggestionModalService.cancelSuggestion($uibModalInstance);
             };
+
+            $scope.currentRteIsCKEditor4 = CURRENT_RTE_IS_CKEDITOR_4;
+
             $scope.submitSuggestion = function() {
               var data = {
                 target_id: ExplorationEngineService.getExplorationId(),

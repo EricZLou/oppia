@@ -15,13 +15,15 @@
 # limitations under the License.
 
 """Base class for visualizations of summarized learner answers."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from core.domain import calculation_registry
+import python_utils
 import schema_utils
 import utils
 
 
-class BaseVisualization(object):
+class BaseVisualization(python_utils.OBJECT):
     """Base class for definitions of visualizations."""
 
     # Option specifications for the visualization, including their descriptions
@@ -68,7 +70,7 @@ class BaseVisualization(object):
             raise utils.ValidationError(
                 'For visualization %s, expected a bool value for '
                 'addressed_info_is_supported; received %s' %
-                self.addressed_info_is_supported)
+                (self.id, self.addressed_info_is_supported))
 
 
 class BarChart(BaseVisualization):

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Tests for learner progress services."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import datetime
 import feconf
@@ -22,6 +23,7 @@ import feconf
 from constants import constants
 from core.domain import collection_domain
 from core.domain import collection_services
+from core.domain import exp_fetchers
 from core.domain import exp_services
 from core.domain import learner_playlist_services
 from core.domain import learner_progress_services
@@ -501,7 +503,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_3 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_3)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_3)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -533,7 +535,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_0 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_0)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -551,7 +553,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         self.publish_exploration(self.owner_id, self.EXP_ID_0)
         learner_progress_services.mark_exploration_as_completed(
             self.user_id, self.EXP_ID_0)
-        public_exploration = exp_services.get_exploration_summary_by_id(
+        public_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             public_exploration.status, constants.ACTIVITY_STATUS_PUBLIC)
@@ -707,7 +709,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_3 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_3)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_3)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -742,7 +744,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_0 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_0)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -760,7 +762,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         self.publish_exploration(self.owner_id, self.EXP_ID_0)
         learner_progress_services.mark_exploration_as_incomplete(
             self.user_id, self.EXP_ID_0, state_name, version)
-        public_exploration = exp_services.get_exploration_summary_by_id(
+        public_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             public_exploration.status, constants.ACTIVITY_STATUS_PUBLIC)
@@ -889,7 +891,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_1 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_1)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_1)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -917,7 +919,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         # Unpublish EXP_ID_0 to change status to ACTIVITY_STATUS_PRIVATE.
         system_user = user_services.UserActionsInfo(feconf.SYSTEM_COMMITTER_ID)
         rights_manager.unpublish_exploration(system_user, self.EXP_ID_0)
-        private_exploration = exp_services.get_exploration_summary_by_id(
+        private_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             private_exploration.status, constants.ACTIVITY_STATUS_PRIVATE)
@@ -935,7 +937,7 @@ class LearnerProgressTests(test_utils.GenericTestBase):
         self.publish_exploration(self.owner_id, self.EXP_ID_0)
         learner_progress_services.add_exp_to_learner_playlist(
             self.user_id, self.EXP_ID_0)
-        public_exploration = exp_services.get_exploration_summary_by_id(
+        public_exploration = exp_fetchers.get_exploration_summary_by_id(
             self.EXP_ID_0)
         self.assertEqual(
             public_exploration.status, constants.ACTIVITY_STATUS_PUBLIC)

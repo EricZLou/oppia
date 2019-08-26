@@ -35,6 +35,7 @@ module.exports = function(config) {
       'core/templates/dev/head/**/*.directive.html',
       'core/templates/dev/head/**/*.template.html',
       'local_compiled_js/extensions/**/*.js',
+      'core/templates/dev/head/AppInit.ts',
       // This is a file that is generated on running the run_frontend_tests.sh
       // script. This generated file is a combination of all the spec files
       // since Karma is unable to run tests on multiple files due to some
@@ -72,12 +73,6 @@ module.exports = function(config) {
       'core/templates/dev/head/*.ts': ['webpack'],
       'core/templates/dev/head/**/*.ts': ['webpack'],
       'extensions/**/*.ts': ['webpack'],
-      'core/templates/dev/head/!(*Spec).js': ['coverage'],
-      'core/templates/dev/head/**/!(*Spec).js': ['coverage'],
-      'core/templates/dev/head/!(*.spec).js': ['coverage'],
-      'core/templates/dev/head/**/!(*.spec).js': ['coverage'],
-      'extensions/!(*Spec).js': ['coverage'],
-      'extensions/**/!(*Spec).js': ['coverage'],
       // Note that these files should contain only directive templates, and no
       // Jinja expressions. They should also be specified within the 'files'
       // list above.
@@ -88,15 +83,14 @@ module.exports = function(config) {
       'extensions/interactions/rule_templates.json': ['json_fixtures'],
       'core/tests/data/*.json': ['json_fixtures']
     },
-    reporters: ['progress', 'coverage'],
-    coverageReporter: {
-      reporters: [{
-        type: 'html'
-      }, {
-        type: 'json'
-      }],
-      subdir: '.',
-      dir: '../karma_coverage_reports/'
+    reporters: ['progress', 'coverage-istanbul'],
+    coverageIstanbulReporter: {
+      reports: ['html', 'lcovonly'],
+      dir: '../karma_coverage_reports/',
+      fixWebpackSourcePaths: true,
+      'report-config': {
+        html: { outdir: 'html' }
+      }
     },
     logLevel: config.LOG_DEBUG,
     autoWatch: false,
@@ -113,16 +107,21 @@ module.exports = function(config) {
     singleRun: true,
     customLaunchers: {
       Chrome_Travis: {
-        base: 'ChromeHeadless',
-        flags: isDocker ? ['--no-sandbox',
-      		'--disable-setuid-sandbox',
-        	'--disable-web-security',
-          '--password-store=basic']
-          : []
+        // Karma can only connect to ChromeHeadless when inside Docker.
+        base: isDocker ? 'ChromeHeadless' : 'Chrome',
+        // Discussion of the necessity of extra flags can be found here:
+        // https://github.com/karma-runner/karma-chrome-launcher/issues/154
+        // https://github.com/karma-runner/karma-chrome-launcher/issues/180
+        flags: isDocker ? [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-web-security'
+        ] : ['--no-sandbox']
       }
     },
 
     plugins: [
+      'karma-coverage-istanbul-reporter',
       'karma-jasmine',
       'karma-chrome-launcher',
       'karma-ng-html2js-preprocessor',
@@ -153,26 +152,42 @@ module.exports = function(config) {
           'extensions',
           'node_modules',
         ],
+        extensions: ['.ts', '.js', '.json', '.html', '.svg', '.png']
       },
+      devtool: 'inline-source-map',
       module: {
-        rules: [{
-          test: /\.ts$/,
-          use: [
-            'cache-loader',
-            'thread-loader',
-            {
-              loader: 'ts-loader',
-              options: {
-                // this is needed for thread-loader to work correctly
-                happyPackMode: true
+        rules: [
+          {
+            test: /\.ts$/,
+            use: [
+              'cache-loader',
+              'thread-loader',
+              {
+                loader: 'ts-loader',
+                options: {
+                  // this is needed for thread-loader to work correctly
+                  happyPackMode: true
+                }
               }
+            ]
+          },
+          {
+            test: /\.html$/,
+            loader: 'underscore-template-loader'
+          },
+          {
+            test: /\.ts$/,
+            enforce: 'post',
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: { esModules: true }
             }
-          ]
-        },
-        {
-          test: /\.html$/,
-          loader: 'underscore-template-loader'
-        }]
+          },
+          {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
+          }
+        ]
       },
       plugins: [
         new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true })

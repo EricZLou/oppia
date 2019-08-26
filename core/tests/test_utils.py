@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Common utilities for test classes."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import contextlib
 import copy
@@ -28,6 +29,7 @@ from constants import constants
 from core.domain import collection_domain
 from core.domain import collection_services
 from core.domain import exp_domain
+from core.domain import exp_fetchers
 from core.domain import exp_services
 from core.domain import question_domain
 from core.domain import question_services
@@ -45,6 +47,7 @@ import feconf
 import main
 import main_mail
 import main_taskqueue
+import python_utils
 import utils
 
 from google.appengine.api import apiproxy_stub
@@ -493,7 +496,7 @@ tags: []
         """Print the line with a prefix that can be identified by the
         script that calls the test.
         """
-        print '%s%s' % (LOG_LINE_PREFIX, line)
+        python_utils.PRINT('%s%s' % (LOG_LINE_PREFIX, line))
 
     def login(self, email, is_super_admin=False):
         """Sets the environment variables to simulate a login.
@@ -741,7 +744,7 @@ tags: []
             webtest.TestResponse: The response of the POST request.
         """
         json_response = app.post(
-            str(url), data, expect_errors=expect_errors,
+            python_utils.STR(url), data, expect_errors=expect_errors,
             upload_files=upload_files, headers=headers,
             status=expected_status_int)
         return json_response
@@ -791,7 +794,7 @@ tags: []
         if expected_status_int >= 400:
             expect_errors = True
         json_response = self.testapp.put(
-            str(url), data, expect_errors=expect_errors)
+            python_utils.STR(url), data, expect_errors=expect_errors)
 
         # Testapp takes in a status parameter which is the expected status of
         # the response. However this expected status is verified only when
@@ -1019,9 +1022,9 @@ tags: []
 
         exploration.add_states(state_names[1:])
         for from_state_name, dest_state_name in (
-                zip(state_names[:-1], state_names[1:])):
+                python_utils.ZIP(state_names[:-1], state_names[1:])):
             from_state = exploration.states[from_state_name]
-            from_state.update_interaction_id(next(interaction_ids))
+            from_state.update_interaction_id(python_utils.NEXT(interaction_ids))
             from_state.interaction.default_outcome.dest = dest_state_name
         end_state = exploration.states[state_names[-1]]
         end_state.update_interaction_id('EndExploration')
@@ -1215,7 +1218,7 @@ tags: []
             language_code=language_code)
 
         # Check whether exploration with given exploration_id exists or not.
-        exploration = exp_services.get_exploration_by_id(
+        exploration = exp_fetchers.get_exploration_by_id(
             exploration_id, strict=False)
         if exploration is None:
             exploration = self.save_new_valid_exploration(
@@ -1342,19 +1345,28 @@ tags: []
         Returns:
             Topic. A newly-created topic.
         """
+        canonical_story_references = [
+            topic_domain.StoryReference.create_default_story_reference(story_id)
+            for story_id in canonical_story_ids
+        ]
+        additional_story_references = [
+            topic_domain.StoryReference.create_default_story_reference(story_id)
+            for story_id in additional_story_ids
+        ]
         topic = topic_domain.Topic(
-            topic_id, name, description, canonical_story_ids,
-            additional_story_ids, uncategorized_skill_ids, subtopics,
+            topic_id, name, description, canonical_story_references,
+            additional_story_references, uncategorized_skill_ids, subtopics,
             feconf.CURRENT_SUBTOPIC_SCHEMA_VERSION, next_subtopic_id,
-            language_code, 0
+            language_code, 0, feconf.CURRENT_STORY_REFERENCE_SCHEMA_VERSION
         )
         topic_services.save_new_topic(owner_id, topic)
         return topic
 
     def save_new_topic_with_subtopic_schema_v1(
             self, topic_id, owner_id, name, canonical_name, description,
-            canonical_story_ids, additional_story_ids, uncategorized_skill_ids,
-            next_subtopic_id, language_code=constants.DEFAULT_LANGUAGE_CODE):
+            canonical_story_references, additional_story_references,
+            uncategorized_skill_ids, next_subtopic_id,
+            language_code=constants.DEFAULT_LANGUAGE_CODE):
         """Saves a new topic with a default version 1 subtopic
         data dictionary.
 
@@ -1373,10 +1385,12 @@ tags: []
             name: str. The name of the topic.
             canonical_name: str. The canonical name (lowercase) of the topic.
             description: str. The desscription of the topic.
-            canonical_story_ids: list(str). The list of ids of canonical stories
-                that are part of the topic.
-            additional_story_ids: list(str). The list of ids of additional
-                stories that are part of the topic.
+            canonical_story_references: list(StoryReference). A set of story
+                reference objects representing the canonical stories that are
+                part of this topic.
+            additional_story_references: list(StoryReference). A set of story
+                reference object representing the additional stories that are
+                part of this topic.
             uncategorized_skill_ids: list(str). The list of ids of skills that
                 are not part of any subtopic.
             next_subtopic_id: int. The id for the next subtopic.
@@ -1394,10 +1408,12 @@ tags: []
             canonical_name=canonical_name,
             description=description,
             language_code=language_code,
-            canonical_story_ids=canonical_story_ids,
-            additional_story_ids=additional_story_ids,
+            canonical_story_references=canonical_story_references,
+            additional_story_references=additional_story_references,
             uncategorized_skill_ids=uncategorized_skill_ids,
             subtopic_schema_version=1,
+            story_reference_schema_version=(
+                feconf.CURRENT_STORY_REFERENCE_SCHEMA_VERSION),
             next_subtopic_id=next_subtopic_id,
             subtopics=[self.VERSION_1_SUBTOPIC_DICT]
         )
@@ -1477,7 +1493,7 @@ tags: []
 
     def save_new_skill(
             self, skill_id, owner_id,
-            description, misconceptions=None, skill_contents=None,
+            description, misconceptions=None, rubrics=None, skill_contents=None,
             language_code=constants.DEFAULT_LANGUAGE_CODE):
         """Creates an Oppia Skill and saves it.
 
@@ -1487,6 +1503,8 @@ tags: []
             description: str. The description of the skill.
             misconceptions: list(Misconception). A list of Misconception objects
                 that contains the various misconceptions of the skill.
+            rubrics: list(Rubric). A list of Rubric objects that contain the
+                rubric for each difficulty of the skill.
             skill_contents: SkillContents. A SkillContents object containing the
                 explanation and examples of the skill.
             language_code: str. The ISO 639-1 code for the language this
@@ -1495,12 +1513,23 @@ tags: []
         Returns:
             Skill. A newly-created skill.
         """
-        skill = skill_domain.Skill.create_default_skill(skill_id, description)
+        skill = skill_domain.Skill.create_default_skill(
+            skill_id, description, [])
         if misconceptions is not None:
             skill.misconceptions = misconceptions
             skill.next_misconception_id = len(misconceptions) + 1
         if skill_contents is not None:
             skill.skill_contents = skill_contents
+        if rubrics is not None:
+            skill.rubrics = rubrics
+        else:
+            skill.rubrics = [
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[0], 'Explanation 1'),
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[1], 'Explanation 2'),
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[2], 'Explanation 3')]
         skill.language_code = language_code
         skill.version = 0
         skill_services.save_new_skill(owner_id, skill)
@@ -1508,8 +1537,9 @@ tags: []
 
     def save_new_skill_with_defined_schema_versions(
             self, skill_id, owner_id, description, next_misconception_id,
-            misconceptions=None, skill_contents=None,
-            misconceptions_schema_version=1, skill_contents_schema_version=1,
+            misconceptions=None, rubrics=None, skill_contents=None,
+            misconceptions_schema_version=1, rubric_schema_version=1,
+            skill_contents_schema_version=1,
             language_code=constants.DEFAULT_LANGUAGE_CODE):
         """Saves a new default skill with the given versions for misconceptions
         and skill contents.
@@ -1531,24 +1561,38 @@ tags: []
                 the next misconception added.
             misconceptions: list(Misconception.to_dict()). The list
                 of misconception dicts associated with the skill.
+            rubrics: list(Rubric.to_dict()). The list of rubric dicts associated
+                with the skill.
             skill_contents: SkillContents.to_dict(). A SkillContents dict
                 containing the explanation and examples of the skill.
             misconceptions_schema_version: int. The schema version for the
                 misconceptions object.
+            rubric_schema_version: int. The schema version for the
+                rubric object.
             skill_contents_schema_version: int. The schema version for the
                 skill_contents object.
             language_code: str. The ISO 639-1 code for the language this
                 skill is written in.
         """
         skill_services.create_new_skill_rights(skill_id, owner_id)
+        if rubrics is None:
+            rubrics = [
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[0], '<p>Explanation 1</p>'),
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[1], '<p>Explanation 2</p>'),
+                skill_domain.Rubric(
+                    constants.SKILL_DIFFICULTIES[2], '<p>Explanation 3</p>')]
         skill_model = skill_models.SkillModel(
             id=skill_id,
             description=description,
             language_code=language_code,
             misconceptions=misconceptions,
+            rubrics=[rubric.to_dict() for rubric in rubrics],
             skill_contents=skill_contents,
             next_misconception_id=next_misconception_id,
             misconceptions_schema_version=misconceptions_schema_version,
+            rubric_schema_version=rubric_schema_version,
             skill_contents_schema_version=skill_contents_schema_version,
             superseding_skill_id=None,
             all_questions_merged=False
@@ -1777,16 +1821,18 @@ class AppEngineTestBase(TestBase):
                 # All other tasks are expected to be mapreduce ones, or
                 # Oppia-taskqueue-related ones.
                 headers = {
-                    key: str(val) for key, val in task.headers.iteritems()
+                    key: python_utils.convert_to_bytes(
+                        val) for key, val in task.headers.items()
                 }
-                headers['Content-Length'] = str(len(task.payload or ''))
+                headers['Content-Length'] = python_utils.convert_to_bytes(
+                    len(task.payload or ''))
 
                 app = (
                     webtest.TestApp(main_taskqueue.app)
                     if task.url.startswith('/task')
                     else self.testapp)
                 response = app.post(
-                    url=str(task.url), params=(task.payload or ''),
+                    url=python_utils.STR(task.url), params=(task.payload or ''),
                     headers=headers, expect_errors=True)
                 if response.status_code != 200:
                     raise RuntimeError(
@@ -1865,7 +1911,7 @@ class AppEngineTestBase(TestBase):
 GenericTestBase = AppEngineTestBase
 
 
-class FunctionWrapper(object):
+class FunctionWrapper(python_utils.OBJECT):
     """A utility for making function wrappers. Create a subclass and override
     any or both of the pre_call_hook and post_call_hook methods. See these
     methods for more info.

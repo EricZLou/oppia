@@ -15,12 +15,14 @@
 # limitations under the License.
 
 """One-off jobs for stories."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import ast
 import logging
 
 from core import jobs
 from core.domain import story_domain
+from core.domain import story_fetchers
 from core.domain import story_services
 from core.platform import models
 import feconf
@@ -52,7 +54,7 @@ class StoryMigrationOneOffJob(jobs.BaseMapReduceOneOffJobManager):
             return
 
         # Note: the read will bring the story up to the newest version.
-        story = story_services.get_story_by_id(item.id)
+        story = story_fetchers.get_story_by_id(item.id)
         try:
             story.validate()
         except Exception as e:

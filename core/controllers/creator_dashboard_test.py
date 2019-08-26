@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the creator dashboard and the notifications dashboard."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import datetime
 
@@ -20,6 +21,7 @@ from constants import constants
 from core.controllers import creator_dashboard
 from core.domain import collection_services
 from core.domain import event_services
+from core.domain import exp_fetchers
 from core.domain import exp_services
 from core.domain import feedback_domain
 from core.domain import feedback_services
@@ -33,9 +35,12 @@ from core.domain import user_services
 from core.platform import models
 from core.tests import test_utils
 import feconf
+import python_utils
 
-(user_models, stats_models, suggestion_models) = models.Registry.import_models(
-    [models.NAMES.user, models.NAMES.statistics, models.NAMES.suggestion])
+(user_models, stats_models, suggestion_models, feedback_models) = (
+    models.Registry.import_models(
+        [models.NAMES.user, models.NAMES.statistics, models.NAMES.suggestion,
+         models.NAMES.feedback]))
 taskqueue_services = models.Registry.import_taskqueue_services()
 
 
@@ -139,7 +144,7 @@ class CreatorDashboardStatisticsTests(test_utils.GenericTestBase):
         """
         # Generate unique user ids to rate an exploration. Each user id needs
         # to be unique since each user can only give an exploration one rating.
-        user_ids = ['user%d' % i for i in range(len(ratings))]
+        user_ids = ['user%d' % i for i in python_utils.RANGE(len(ratings))]
         self.process_and_flush_pending_tasks()
         for ind, user_id in enumerate(user_ids):
             rating_services.assign_rating_to_exploration(
@@ -369,7 +374,8 @@ class CreatorDashboardStatisticsTests(test_utils.GenericTestBase):
         self.assertEqual(
             user_model.impact_score, self.USER_IMPACT_SCORE_DEFAULT)
         self.assertEqual(user_model.num_ratings, 3)
-        self.assertEqual(user_model.average_ratings, 10 / 3.0)
+        self.assertEqual(
+            user_model.average_ratings, python_utils.divide(10, 3.0))
         self.logout()
 
     def test_stats_for_single_exploration_with_multiple_owners(self):
@@ -457,7 +463,7 @@ class CreatorDashboardStatisticsTests(test_utils.GenericTestBase):
         expected_results = {
             'total_plays': 5,
             'num_ratings': 4,
-            'average_ratings': 18 / 4.0
+            'average_ratings': python_utils.divide(18, 4.0)
         }
 
         user_model_2 = user_models.UserStatsModel.get(self.owner_id_2)
@@ -799,6 +805,60 @@ class CreatorDashboardHandlerTests(test_utils.GenericTestBase):
             suggestions['change']['old_value']['content_id'], 'content')
         self.logout()
 
+    def test_get_suggestions_to_review_list(self):
+        self.login(self.OWNER_EMAIL)
+
+        suggestions = self.get_json(
+            feconf.CREATOR_DASHBOARD_DATA_URL)['suggestions_to_review_list']
+        self.assertEqual(suggestions, [])
+
+        change_dict = {
+            'cmd': 'edit_state_property',
+            'property_name': 'content',
+            'state_name': 'Introduction',
+            'new_value': ''
+        }
+        self.save_new_default_exploration('exp1', self.owner_id)
+
+        suggestion_services.create_new_user_contribution_scoring_model(
+            self.owner_id, 'category1', 15)
+        model1 = feedback_models.GeneralFeedbackThreadModel.create(
+            'exploration.exp1.thread_1')
+        model1.entity_type = 'exploration'
+        model1.entity_id = 'exp1'
+        model1.subject = 'subject'
+        model1.put()
+
+        suggestion_models.GeneralSuggestionModel.create(
+            suggestion_models.SUGGESTION_TYPE_EDIT_STATE_CONTENT,
+            suggestion_models.TARGET_TYPE_EXPLORATION,
+            'exp1', 1, suggestion_models.STATUS_IN_REVIEW, self.owner_id_1,
+            self.owner_id_2, change_dict, 'category1',
+            'exploration.exp1.thread_1')
+
+        change_dict['old_value'] = {
+            'content_id': 'content',
+            'html': ''
+        }
+        suggestions = self.get_json(
+            feconf.CREATOR_DASHBOARD_DATA_URL)['suggestions_to_review_list']
+
+        self.assertEqual(len(suggestions), 1)
+        self.assertEqual(suggestions[0]['change'], change_dict)
+        # Test to check if suggestions populate old value of the change.
+        self.assertEqual(
+            suggestions[0]['change']['old_value']['content_id'], 'content')
+
+        self.logout()
+
+    def test_creator_dashboard_page(self):
+        self.login(self.OWNER_EMAIL)
+
+        response = self.get_html_response(feconf.CREATOR_DASHBOARD_URL)
+        self.assertIn('Creator Dashboard - Oppia', response.body)
+
+        self.logout()
+
 
 class NotificationsDashboardHandlerTests(test_utils.GenericTestBase):
 
@@ -921,7 +981,7 @@ class CreationButtonsTests(test_utils.GenericTestBase):
                 csrf_token=csrf_token)[creator_dashboard.EXPLORATION_ID_KEY]
             explorations_list = self.get_json(
                 feconf.CREATOR_DASHBOARD_DATA_URL)['explorations_list']
-            exploration = exp_services.get_exploration_by_id(exp_a_id)
+            exploration = exp_fetchers.get_exploration_by_id(exp_a_id)
             self.assertEqual(explorations_list[0]['id'], exp_a_id)
             self.assertEqual(exploration.to_yaml(), self.SAMPLE_YAML_CONTENT)
             self.logout()

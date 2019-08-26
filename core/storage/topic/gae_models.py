@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Models for topics and related constructs."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from constants import constants
 from core.platform import models
@@ -51,12 +52,16 @@ class TopicModel(base_models.VersionedModel):
     canonical_name = ndb.StringProperty(required=True, indexed=True)
     # The description of the topic.
     description = ndb.TextProperty(indexed=False)
-    # This consists of the list of canonical story ids that are part of
-    # this topic.
-    canonical_story_ids = ndb.StringProperty(repeated=True, indexed=True)
-    # This consists of the list of additional (non-canonical) story ids that
+    # This consists of the list of objects referencing canonical stories that
     # are part of this topic.
-    additional_story_ids = ndb.StringProperty(repeated=True, indexed=True)
+    canonical_story_references = ndb.JsonProperty(repeated=True, indexed=False)
+    # This consists of the list of objects referencing additional stories that
+    # are part of this topic.
+    additional_story_references = ndb.JsonProperty(repeated=True, indexed=False)
+    # The schema version for the story reference object on each of the above 2
+    # lists.
+    story_reference_schema_version = ndb.IntegerProperty(
+        required=True, indexed=True)
     # This consists of the list of uncategorized skill ids that are not part of
     # any subtopic.
     uncategorized_skill_ids = ndb.StringProperty(repeated=True, indexed=True)
@@ -68,6 +73,7 @@ class TopicModel(base_models.VersionedModel):
     next_subtopic_id = ndb.IntegerProperty(required=True)
     # The ISO 639-1 code for the language this topic is written in.
     language_code = ndb.StringProperty(required=True, indexed=True)
+
 
     def _trusted_commit(
             self, committer_id, commit_type, commit_message, commit_cmds):
@@ -219,7 +225,7 @@ class SubtopicPageModel(base_models.VersionedModel):
     # The topic id that this subtopic is a part of.
     topic_id = ndb.StringProperty(required=True, indexed=True)
     # The json data of the subtopic consisting of subtitled_html,
-    # content_ids_to_audio_translations and written_translations fields.
+    # recorded_voiceovers and written_translations fields.
     page_contents = ndb.JsonProperty(required=True)
     # The schema version for the page_contents field.
     page_contents_schema_version = ndb.IntegerProperty(

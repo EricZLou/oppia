@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Models for storing the story data models."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from constants import constants
 from core.platform import models
@@ -154,30 +155,3 @@ class StorySummaryModel(base_models.BaseModel):
     # The number of nodes that are part of this story.
     node_count = ndb.IntegerProperty(required=True, indexed=True)
     version = ndb.IntegerProperty(required=True)
-
-
-class StoryRightsSnapshotMetadataModel(base_models.BaseSnapshotMetadataModel):
-    """Storage model for the metadata for a story rights snapshot."""
-    pass
-
-
-class StoryRightsSnapshotContentModel(base_models.BaseSnapshotContentModel):
-    """Storage model for the content of a story rights snapshot."""
-    pass
-
-
-class StoryRightsModel(base_models.VersionedModel):
-    """Storage model for rights related to a story.
-
-    The id of each instance is the id of the corresponding story.
-    """
-
-    SNAPSHOT_METADATA_CLASS = StoryRightsSnapshotMetadataModel
-    SNAPSHOT_CONTENT_CLASS = StoryRightsSnapshotContentModel
-    ALLOW_REVERT = False
-
-    # The user_ids of the managers of this story.
-    manager_ids = ndb.StringProperty(indexed=True, repeated=True)
-    # Whether this story is published.
-    story_is_published = ndb.BooleanProperty(
-        indexed=True, required=True, default=False)

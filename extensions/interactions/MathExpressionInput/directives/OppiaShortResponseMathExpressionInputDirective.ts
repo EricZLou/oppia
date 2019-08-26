@@ -20,12 +20,12 @@
  * followed by the name of the arg.
  */
 
+require('directives/mathjax-bind.directive.ts');
+
 require('domain/utilities/UrlInterpolationService.ts');
 require('services/HtmlEscaperService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('oppiaShortResponseMathExpressionInput', [
+angular.module('oppia').directive('oppiaShortResponseMathExpressionInput', [
   'HtmlEscaperService', 'UrlInterpolationService',
   function(HtmlEscaperService, UrlInterpolationService) {
     return {

@@ -19,9 +19,7 @@
 
 require('domain/utilities/LanguageUtilService.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.factory('TranslationLanguageService', [
+angular.module('oppia').factory('TranslationLanguageService', [
   '$log', '$rootScope', 'LanguageUtilService',
   function($log, $rootScope, LanguageUtilService) {
     var activeLanguageCode = null;
@@ -38,6 +36,10 @@ oppia.factory('TranslationLanguageService', [
         }
         activeLanguageCode = newActiveLanguageCode;
         $rootScope.$broadcast('activeLanguageChanged');
+      },
+      getActiveLanguageDescription: function() {
+        return LanguageUtilService.getAudioLanguageDescription(
+          activeLanguageCode);
       }
     };
   }]);

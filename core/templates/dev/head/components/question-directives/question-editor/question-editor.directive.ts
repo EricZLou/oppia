@@ -16,6 +16,9 @@
  * @fileoverview Controller for the questions editor directive.
  */
 
+require(
+  'components/forms/forms-templates/' +
+  'mark-all-audio-and-translations-as-needing-update.controller.ts');
 require('components/state-editor/state-editor.directive.ts');
 
 require('components/entity-creation-services/question-creation.service.ts');
@@ -35,18 +38,16 @@ require('domain/utilities/UrlInterpolationService.ts');
 require('services/AlertsService.ts');
 require('services/EditabilityService.ts');
 
-require('pages/interaction-specs.constants.ts');
+require('pages/interaction-specs.constants.ajs.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('questionEditor', [
+angular.module('oppia').directive('questionEditor', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',
       scope: {},
       bindToController: {
         getQuestionId: '&questionId',
-        getMisconceptions: '&misconceptions',
+        getMisconceptionsBySkill: '&misconceptionsBySkill',
         canEditQuestion: '&',
         question: '=',
         questionStateData: '=',
@@ -77,7 +78,8 @@ oppia.directive('questionEditor', [
             EditabilityService.markNotEditable();
           }
           StateEditorService.setActiveStateName('question');
-          StateEditorService.setMisconceptions(ctrl.getMisconceptions());
+          StateEditorService.setMisconceptionsBySkill(
+            ctrl.getMisconceptionsBySkill());
           ctrl.oppiaBlackImgUrl = UrlInterpolationService.getStaticImageUrl(
             '/avatar/oppia_avatar_100px.svg');
 

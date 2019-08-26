@@ -16,24 +16,30 @@
  * @fileoverview Unit tests for set input validation service.
  */
 
-require('interactions/SetInput/directives/SetInputValidationService.ts');
+import { TestBed } from '@angular/core/testing';
 
-describe('SetInputValidationService', function() {
-  var validatorService, WARNING_TYPES;
+import { AnswerGroup, AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { SetInputValidationService } from
+  'interactions/SetInput/directives/SetInputValidationService';
+import { Outcome, OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
 
-  var currentState;
-  var goodAnswerGroups, goodDefaultOutcome;
-  var oof, agof;
+describe('SetInputValidationService', () => {
+  let validatorService: SetInputValidationService;
 
-  beforeEach(function() {
-    angular.mock.module('oppia');
-  });
+  let currentState: string;
+  let goodAnswerGroups: AnswerGroup[], goodDefaultOutcome: Outcome;
+  let oof: OutcomeObjectFactory, agof: AnswerGroupObjectFactory;
 
-  beforeEach(angular.mock.inject(function($injector) {
-    validatorService = $injector.get('SetInputValidationService');
-    oof = $injector.get('OutcomeObjectFactory');
-    agof = $injector.get('AnswerGroupObjectFactory');
-    WARNING_TYPES = $injector.get('WARNING_TYPES');
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [SetInputValidationService]
+    });
+
+    validatorService = TestBed.get(SetInputValidationService);
+    oof = TestBed.get(OutcomeObjectFactory);
+    agof = TestBed.get(AnswerGroupObjectFactory);
 
     currentState = 'First State';
 
@@ -50,9 +56,9 @@ describe('SetInputValidationService', function() {
     });
 
     goodAnswerGroups = [agof.createNew([], goodDefaultOutcome, false, null)];
-  }));
+  });
 
-  it('should be able to perform basic validation', function() {
+  it('should be able to perform basic validation', () => {
     var warnings = validatorService.getAllWarnings(
       currentState, {}, goodAnswerGroups, goodDefaultOutcome);
     expect(warnings).toEqual([]);

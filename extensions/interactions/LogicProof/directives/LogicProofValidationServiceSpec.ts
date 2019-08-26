@@ -16,25 +16,32 @@
  * @fileoverview Unit tests for logic proof validation service.
  */
 
-require('interactions/LogicProof/directives/LogicProofValidationService.ts');
+import { TestBed } from '@angular/core/testing';
 
-describe('LogicProofValidationService', function() {
-  var validatorService, WARNING_TYPES;
+import { AnswerGroup, AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { LogicProofValidationService } from
+  'interactions/LogicProof/directives/LogicProofValidationService';
+import { Outcome, OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
 
-  var currentState;
-  var badOutcome, goodAnswerGroups, goodDefaultOutcome;
-  var oof, agof;
+describe('LogicProofValidationService', () => {
+  let validatorService: LogicProofValidationService;
 
-  beforeEach(function() {
-    angular.mock.module('oppia');
-  });
+  let currentState: string;
+  let badOutcome: Outcome, goodAnswerGroups: AnswerGroup[],
+    goodDefaultOutcome: Outcome;
+  let oof: OutcomeObjectFactory, agof: AnswerGroupObjectFactory;
 
-  beforeEach(angular.mock.inject(function($injector) {
-    validatorService = $injector.get('LogicProofValidationService');
-    WARNING_TYPES = $injector.get('WARNING_TYPES');
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [LogicProofValidationService]
+    });
 
-    oof = $injector.get('OutcomeObjectFactory');
-    agof = $injector.get('AnswerGroupObjectFactory');
+    validatorService = TestBed.get(LogicProofValidationService);
+
+    oof = TestBed.get(OutcomeObjectFactory);
+    agof = TestBed.get(AnswerGroupObjectFactory);
 
     currentState = 'First State';
 
@@ -63,15 +70,15 @@ describe('LogicProofValidationService', function() {
     });
 
     goodAnswerGroups = [agof.createNew([], goodDefaultOutcome, false, null)];
-  }));
+  });
 
-  it('should be able to perform basic validation', function() {
+  it('should be able to perform basic validation', () => {
     var warnings = validatorService.getAllWarnings(
       currentState, {}, goodAnswerGroups, goodDefaultOutcome);
     expect(warnings).toEqual([]);
   });
 
-  it('should not have warnings for a confusing default outcome', function() {
+  it('should not have warnings for a confusing default outcome', () => {
     var warnings = validatorService.getAllWarnings(
       currentState, {}, [], badOutcome);
     expect(warnings).toEqual([]);

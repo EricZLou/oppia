@@ -16,6 +16,7 @@
  * @fileoverview Directive for the selection dropdown with HTML content.
  */
 
+require('directives/angular-html-bind.directive.ts');
 require('domain/utilities/UrlInterpolationService.ts');
 
 // This directive allows user to put html into select's options.
@@ -23,9 +24,7 @@ require('domain/utilities/UrlInterpolationService.ts');
 // Attribute 'val' is presented to the user. After user selection, the
 // corresponding attribute 'id' is assigned to 'selection'
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('htmlSelect', [
+angular.module('oppia').directive('htmlSelect', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',

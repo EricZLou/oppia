@@ -24,9 +24,15 @@ require('services/contextual/UrlService.ts');
 require('services/contextual/WindowDimensionsService.ts');
 require('services/HtmlEscaperService.ts');
 
-var oppia = require('AppInit.ts').module;
+import logicProofShared from 'interactions/LogicProof/static/js/shared.ts';
+import logicProofStudent from 'interactions/LogicProof/static/js/student.ts';
+import logicProofData from 'interactions/LogicProof/static/js/data.ts';
+import logicProofConversion from
+  'interactions/LogicProof/static/js/conversion.ts';
+import LOGIC_PROOF_DEFAULT_QUESTION_DATA from
+  'interactions/LogicProof/static/js/generatedDefaultData.ts';
 
-oppia.directive('oppiaInteractiveLogicProof', [
+angular.module('oppia').directive('oppiaInteractiveLogicProof', [
   'HtmlEscaperService', 'UrlInterpolationService', 'EVENT_NEW_CARD_AVAILABLE',
   function(
       HtmlEscaperService, UrlInterpolationService, EVENT_NEW_CARD_AVAILABLE) {

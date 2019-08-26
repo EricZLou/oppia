@@ -15,9 +15,10 @@
 """Funtions to create, accept, reject, update and perform other operations on
 suggestions.
 """
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from core.domain import email_manager
-from core.domain import exp_services
+from core.domain import exp_fetchers
 from core.domain import feedback_services
 from core.domain import suggestion_registry
 from core.domain import user_services
@@ -62,7 +63,7 @@ def create_suggestion(
     status = suggestion_models.STATUS_IN_REVIEW
 
     if target_type == suggestion_models.TARGET_TYPE_EXPLORATION:
-        exploration = exp_services.get_exploration_by_id(target_id)
+        exploration = exp_fetchers.get_exploration_by_id(target_id)
     if suggestion_type == suggestion_models.SUGGESTION_TYPE_EDIT_STATE_CONTENT:
         score_category = (
             suggestion_models.SCORE_TYPE_CONTENT +

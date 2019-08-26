@@ -16,6 +16,21 @@
  * @fileoverview Unit tests for number with units validation service.
  */
 
+// TODO(#7222): Remove the following block of unnnecessary imports once
+// NumberWithUnitsValidationService.ts is upgraded to Angular 8.
+import { AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { baseInteractionValidationService } from
+  'interactions/baseInteractionValidationService';
+import { FractionObjectFactory } from 'domain/objects/FractionObjectFactory';
+import { OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
+import { RuleObjectFactory } from 'domain/exploration/RuleObjectFactory';
+import { SubtitledHtmlObjectFactory } from
+  'domain/exploration/SubtitledHtmlObjectFactory';
+import { UnitsObjectFactory } from 'domain/objects/UnitsObjectFactory';
+// ^^^ This block is to be removed.
+
 require(
   'interactions/NumberWithUnits/directives/' +
   'NumberWithUnitsValidationService.ts');
@@ -32,6 +47,23 @@ describe('NumberWithUnitsValidationService', function() {
   beforeEach(function() {
     angular.mock.module('oppia');
   });
+  beforeEach(angular.mock.module('oppia', function($provide) {
+    $provide.value(
+      'AnswerGroupObjectFactory', new AnswerGroupObjectFactory(
+        new OutcomeObjectFactory(new SubtitledHtmlObjectFactory()),
+        new RuleObjectFactory()));
+    $provide.value(
+      'baseInteractionValidationService',
+      new baseInteractionValidationService());
+    $provide.value('FractionObjectFactory', new FractionObjectFactory());
+    $provide.value(
+      'OutcomeObjectFactory', new OutcomeObjectFactory(
+        new SubtitledHtmlObjectFactory()));
+    $provide.value('RuleObjectFactory', new RuleObjectFactory());
+    $provide.value(
+      'SubtitledHtmlObjectFactory', new SubtitledHtmlObjectFactory());
+    $provide.value('UnitsObjectFactory', new UnitsObjectFactory());
+  }));
 
   beforeEach(angular.mock.inject(function($injector) {
     validatorService = $injector.get('NumberWithUnitsValidationService');

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Tests for the base interaction specification."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 import os
 import re
@@ -22,13 +23,14 @@ import string
 import struct
 
 from core.domain import dependency_registry
+from core.domain import exp_fetchers
 from core.domain import exp_services
-from core.domain import html_validation_service
 from core.domain import interaction_registry
 from core.domain import obj_services
 from core.tests import test_utils
 from extensions.interactions import base
 import feconf
+import python_utils
 import schema_utils
 import schema_utils_test
 import utils
@@ -42,15 +44,12 @@ INTERACTION_THUMBNAIL_HEIGHT_PX = 146
 TEXT_INPUT_ID = 'TextInput'
 
 _INTERACTION_CONFIG_SCHEMA = [
-    ('name', basestring), ('display_mode', basestring),
-    ('description', basestring), ('_customization_arg_specs', list),
+    ('name', python_utils.BASESTRING),
+    ('display_mode', python_utils.BASESTRING),
+    ('description', python_utils.BASESTRING),
+    ('_customization_arg_specs', list),
     ('is_terminal', bool), ('needs_summary', bool),
     ('show_generic_submit_button', bool)]
-
-
-def mock_get_filename_with_dimensions(filename, unused_exp_id):
-    return html_validation_service.regenerate_image_filename_using_dimensions(
-        filename, 490, 120)
 
 
 class InteractionAnswerUnitTests(test_utils.GenericTestBase):
@@ -68,6 +67,23 @@ class InteractionAnswerUnitTests(test_utils.GenericTestBase):
         with self.assertRaisesRegexp(Exception, 'not a valid object class'):
             interaction.answer_type = 'FakeObjType'
             interaction.normalize_answer('15')
+
+    def test_get_rule_description_with_invalid_rule_name_raises_error(self):
+        interaction = interaction_registry.Registry.get_interaction_by_id(
+            'CodeRepl')
+        with self.assertRaisesRegexp(
+            Exception, 'Could not find rule with name invalid_rule_name'):
+            interaction.get_rule_description('invalid_rule_name')
+
+    def test_get_rule_param_type_with_invalid_rule_param_name_raises_error(
+            self):
+        interaction = interaction_registry.Registry.get_interaction_by_id(
+            'CodeRepl')
+        with self.assertRaisesRegexp(
+            Exception,
+            'Rule CodeEquals has no param called invalid_rule_param_name'):
+            interaction.get_rule_param_type(
+                'CodeEquals', 'invalid_rule_param_name')
 
 
 class InteractionUnitTests(test_utils.GenericTestBase):
@@ -92,9 +108,11 @@ class InteractionUnitTests(test_utils.GenericTestBase):
             self.assertEqual(set(ca_spec.keys()), set([
                 'name', 'description', 'schema', 'default_value']))
 
-            self.assertTrue(isinstance(ca_spec['name'], basestring))
+            self.assertTrue(
+                isinstance(ca_spec['name'], python_utils.BASESTRING))
             self.assertTrue(self._is_alphanumeric_string(ca_spec['name']))
-            self.assertTrue(isinstance(ca_spec['description'], basestring))
+            self.assertTrue(
+                isinstance(ca_spec['description'], python_utils.BASESTRING))
             self.assertGreater(len(ca_spec['description']), 0)
 
             schema_utils_test.validate_schema(ca_spec['schema'])
@@ -127,18 +145,18 @@ class InteractionUnitTests(test_utils.GenericTestBase):
                 visualization specs to be validated.
         """
         _answer_visualizations_specs_schema = [
-            ('id', basestring), ('options', dict),
-            ('calculation_id', basestring),
+            ('id', python_utils.BASESTRING), ('options', dict),
+            ('calculation_id', python_utils.BASESTRING),
             ('addressed_info_is_supported', bool)]
         _answer_visualization_keys = [
             item[0] for item in _answer_visualizations_specs_schema]
 
         # Check that the keys and the types of their values are correct.
         for spec in answer_visualization_specs:
-            self.assertItemsEqual(spec.keys(), _answer_visualization_keys)
+            self.assertItemsEqual(list(spec.keys()), _answer_visualization_keys)
             for key, item_type in _answer_visualizations_specs_schema:
                 self.assertTrue(isinstance(spec[key], item_type))
-                if item_type == basestring:
+                if item_type == python_utils.BASESTRING:
                     self.assertTrue(spec[key])
 
     def _listdir_omit_ignored(self, directory):
@@ -172,7 +190,7 @@ class InteractionUnitTests(test_utils.GenericTestBase):
         self.assertEqual(interaction.name, 'Text Input')
 
         interaction_dict = interaction.to_dict()
-        self.assertItemsEqual(interaction_dict.keys(), [
+        self.assertItemsEqual(list(interaction_dict.keys()), [
             'id', 'name', 'description', 'display_mode',
             'customization_arg_specs', 'is_trainable', 'is_terminal',
             'is_linear', 'rule_descriptions', 'instructions',
@@ -255,10 +273,6 @@ class InteractionUnitTests(test_utils.GenericTestBase):
             #  Required:
             #    * A python file called {InteractionName}.py.
             #    * An __init__.py file used to import the Python file.
-            #    * An html file called {InteractionName}.html. Most of the HTML
-            #      files are empty, only some contain <link> for importing CSS
-            #      do not add anything into these files, they are scheduled for
-            #      deletion (#6962).
             #    * A TypeScript file called {InteractionName}.ts.
             #    * A directory name 'directives' containing TS and HTML files
             #      for directives
@@ -294,18 +308,15 @@ class InteractionUnitTests(test_utils.GenericTestBase):
                 pass
 
             self.assertEqual(
-                interaction_dir_optional_dirs_and_files_count + 6,
+                interaction_dir_optional_dirs_and_files_count + 5,
                 len(interaction_dir_contents)
             )
 
             py_file = os.path.join(interaction_dir, '%s.py' % interaction_id)
-            html_file = os.path.join(
-                interaction_dir, '%s.html' % interaction_id)
             ts_file = os.path.join(
                 interaction_dir, '%s.ts' % interaction_id)
 
             self.assertTrue(os.path.isfile(py_file))
-            self.assertTrue(os.path.isfile(html_file))
             self.assertTrue(os.path.isfile(ts_file))
 
             # Check that __init__.py file exists.
@@ -377,7 +388,7 @@ class InteractionUnitTests(test_utils.GenericTestBase):
                 interaction_dir, 'static', '%s.png' % interaction_id)
 
             self.assertTrue(os.path.isfile(png_file))
-            with open(png_file, 'rb') as f:
+            with python_utils.open_file(png_file, 'rb', encoding=None) as f:
                 img_data = f.read()
                 width, height = struct.unpack('>LL', img_data[16:24])
                 self.assertEqual(int(width), INTERACTION_THUMBNAIL_WIDTH_PX)
@@ -455,7 +466,7 @@ class InteractionUnitTests(test_utils.GenericTestBase):
             for item, item_type in _INTERACTION_CONFIG_SCHEMA:
                 self.assertTrue(isinstance(
                     getattr(interaction, item), item_type))
-                if item_type == basestring:
+                if item_type == python_utils.BASESTRING:
                     self.assertTrue(getattr(interaction, item))
 
             self.assertIn(interaction.display_mode, base.ALLOWED_DISPLAY_MODES)
@@ -499,7 +510,8 @@ class InteractionUnitTests(test_utils.GenericTestBase):
                 self.assertIsNone(interaction.narrow_instructions)
             else:
                 self.assertTrue(
-                    isinstance(interaction.instructions, basestring))
+                    isinstance(
+                        interaction.instructions, python_utils.BASESTRING))
                 self.assertIsNotNone(interaction.instructions)
                 self.assertIsNotNone(interaction.narrow_instructions)
 
@@ -511,7 +523,9 @@ class InteractionUnitTests(test_utils.GenericTestBase):
             # default_outcome_heading property.
             if interaction.is_linear:
                 self.assertTrue(
-                    isinstance(interaction.default_outcome_heading, basestring)
+                    isinstance(
+                        interaction.default_outcome_heading,
+                        python_utils.BASESTRING)
                     and interaction.default_outcome_heading)
             else:
                 self.assertIsNone(interaction.default_outcome_heading)
@@ -524,7 +538,7 @@ class InteractionUnitTests(test_utils.GenericTestBase):
 
             # Check that the rules for this interaction have object editor
             # templates and default values.
-            for rule_name in interaction.rules_dict.keys():
+            for rule_name in list(interaction.rules_dict.keys()):
                 param_list = interaction.get_rule_param_list(rule_name)
 
                 for (_, param_obj_cls) in param_list:
@@ -577,12 +591,9 @@ class InteractionDemoExplorationUnitTests(test_utils.GenericTestBase):
     _DEMO_EXPLORATION_ID = '16'
 
     def test_interactions_demo_exploration(self):
-        with self.swap(
-            html_validation_service, 'get_filename_with_dimensions',
-            mock_get_filename_with_dimensions):
-            exp_services.load_demo(self._DEMO_EXPLORATION_ID)
-            exploration = exp_services.get_exploration_by_id(
-                self._DEMO_EXPLORATION_ID)
+        exp_services.load_demo(self._DEMO_EXPLORATION_ID)
+        exploration = exp_fetchers.get_exploration_by_id(
+            self._DEMO_EXPLORATION_ID)
 
         all_interaction_ids = set(
             interaction_registry.Registry.get_all_interaction_ids())

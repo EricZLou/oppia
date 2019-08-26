@@ -13,16 +13,17 @@
 # limitations under the License.
 
 """Controllers for the review tests page."""
+from __future__ import absolute_import  # pylint: disable=import-only-modules
 
 from constants import constants
 from core.controllers import acl_decorators
 from core.controllers import base
 from core.domain import dependency_registry
 from core.domain import interaction_registry
-from core.domain import obj_services
 from core.domain import skill_services
-from core.domain import story_services
+from core.domain import story_fetchers
 import feconf
+
 import jinja2
 
 
@@ -30,13 +31,11 @@ class ReviewTestsPage(base.BaseHandler):
     """Renders the review tests page."""
 
     @acl_decorators.can_access_story_viewer_page
-    def get(self, story_id):
+    def get(self, _):
         """Handles GET requests."""
 
         if not constants.ENABLE_NEW_STRUCTURE_PLAYERS:
             raise self.PageNotFoundException
-
-        story = story_services.get_story_by_id(story_id)
 
         interaction_ids = feconf.ALLOWED_QUESTION_INTERACTION_IDS
 
@@ -47,18 +46,9 @@ class ReviewTestsPage(base.BaseHandler):
             dependency_registry.Registry.get_deps_html_and_angular_modules(
                 interaction_dependency_ids))
 
-        interaction_templates = (
-            interaction_registry.Registry.get_interaction_html(
-                interaction_ids))
-
         self.values.update({
-            'DEFAULT_OBJECT_VALUES': obj_services.get_default_object_values(),
             'additional_angular_modules': additional_angular_modules,
-            'INTERACTION_SPECS': interaction_registry.Registry.get_all_specs(),
-            'interaction_templates': jinja2.utils.Markup(
-                interaction_templates),
             'dependencies_html': jinja2.utils.Markup(dependencies_html),
-            'story_name': story.title
         })
         self.render_template('dist/review-test-page.mainpage.html')
 
@@ -76,9 +66,9 @@ class ReviewTestsPageDataHandler(base.BaseHandler):
         if not constants.ENABLE_NEW_STRUCTURE_PLAYERS:
             raise self.PageNotFoundException
 
-        story = story_services.get_story_by_id(story_id)
+        story = story_fetchers.get_story_by_id(story_id)
         latest_completed_node_ids = (
-            story_services.get_latest_completed_node_ids(self.user_id, story_id)
+            story_fetchers.get_latest_completed_node_ids(self.user_id, story_id)
         )
 
         if len(latest_completed_node_ids) == 0:
@@ -89,7 +79,7 @@ class ReviewTestsPageDataHandler(base.BaseHandler):
                 story.get_acquired_skill_ids_for_node_ids(
                     latest_completed_node_ids
                 ))
-        except Exception, e:
+        except Exception as e:
             raise self.PageNotFoundException(e)
         skill_descriptions = {}
         for skill in skills:
@@ -97,6 +87,7 @@ class ReviewTestsPageDataHandler(base.BaseHandler):
 
 
         self.values.update({
-            'skill_descriptions': skill_descriptions
+            'skill_descriptions': skill_descriptions,
+            'story_name': story.title
         })
         self.render_json(self.values)

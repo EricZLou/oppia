@@ -19,14 +19,18 @@
 var commonWebpackConfig = require('./webpack.config.ts');
 var path = require('path');
 
+const { styles } = require('@ckeditor/ckeditor5-dev-utils/lib/');
+
 module.exports = {
   mode: 'development',
   resolve: {
     modules: [
       path.resolve(__dirname, 'core/templates/dev/head'),
       path.resolve(__dirname, 'extensions'),
-      path.resolve(__dirname, 'node_modules')
+      path.resolve(__dirname, 'node_modules'),
+      path.resolve(__dirname, 'third_party')
     ],
+    extensions: ['.ts', '.js', '.json', '.html', '.svg', '.png'],
     alias: {
       '@angular/upgrade/static': (
         '@angular/upgrade/bundles/upgrade-static.umd.js')
@@ -36,6 +40,29 @@ module.exports = {
   plugins: commonWebpackConfig.plugins,
   module: {
     rules: [{
+      test: /ckeditor5-[^\/]+\/theme\/icons\/[^\/]+\.svg$/,
+      use: ['raw-loader']
+    },
+    {
+      test: /ckeditor5-[^\/]+\/theme\/[-\w\/]+\.css$/,
+      use: [{
+        loader: 'style-loader',
+        options: {
+          singleton: true
+        }
+      },
+      {
+        loader: 'postcss-loader',
+        options: styles.getPostCssConfig( {
+          themeImporter: {
+            themePath: require.resolve( '@ckeditor/ckeditor5-theme-lark' )
+          },
+          minify: true
+        })
+      },
+      ]
+    },
+    {
       test: /\.ts$/,
       include: [
         path.resolve(__dirname, 'core/templates/dev/head'),
@@ -44,12 +71,7 @@ module.exports = {
       ],
       use: [
         'cache-loader',
-        {
-          loader: 'thread-loader',
-          options: {
-            poolTimeout: Infinity,
-          }
-        },
+        'thread-loader',
         {
           loader: 'ts-loader',
           options: {
@@ -62,6 +84,13 @@ module.exports = {
     {
       test: /\.html$/,
       loader: 'underscore-template-loader'
+    },
+    {
+      test: /\.css$/,
+      include: [
+        path.resolve(__dirname, 'extensions'),
+      ],
+      use: ['style-loader', 'css-loader']
     }]
   },
   output: {

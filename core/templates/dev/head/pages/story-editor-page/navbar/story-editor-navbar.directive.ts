@@ -16,6 +16,9 @@
  * @fileoverview Directive for the navbar of the story editor.
  */
 
+require(
+  'components/common-layout-directives/common-elements/' +
+  'loading-dots.directive.ts');
 require('domain/editor/undo_redo/BaseUndoRedoService.ts');
 require('domain/editor/undo_redo/UndoRedoService.ts');
 require('domain/utilities/UrlInterpolationService.ts');
@@ -23,11 +26,9 @@ require('pages/story-editor-page/services/story-editor-state.service.ts');
 require('services/AlertsService.ts');
 require('services/contextual/UrlService.ts');
 
-require('pages/story-editor-page/story-editor-page.constants.ts');
+require('pages/story-editor-page/story-editor-page.constants.ajs.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('storyEditorNavbar', [
+angular.module('oppia').directive('storyEditorNavbar', [
   'UrlInterpolationService', function(UrlInterpolationService) {
     return {
       restrict: 'E',
@@ -43,8 +44,8 @@ oppia.directive('storyEditorNavbar', [
             UndoRedoService, StoryEditorStateService, UrlService,
             EVENT_STORY_INITIALIZED, EVENT_STORY_REINITIALIZED,
             EVENT_UNDO_REDO_SERVICE_CHANGE_APPLIED) {
-          var topicId = UrlService.getTopicIdFromUrl();
           $scope.story = StoryEditorStateService.getStory();
+          $scope.isStoryPublished = StoryEditorStateService.isStoryPublished;
           $scope.isSaveInProgress = StoryEditorStateService.isSavingStory;
           $scope.validationIssues = [];
 
@@ -64,7 +65,7 @@ oppia.directive('storyEditorNavbar', [
 
           $scope.discardChanges = function() {
             UndoRedoService.clearChanges();
-            StoryEditorStateService.loadStory(topicId, $scope.story.getId());
+            StoryEditorStateService.loadStory($scope.story.getId());
           };
 
           var _validateStory = function() {
@@ -91,8 +92,24 @@ oppia.directive('storyEditorNavbar', [
             });
 
             modalInstance.result.then(function(commitMessage) {
-              StoryEditorStateService.saveStory(topicId, commitMessage);
+              StoryEditorStateService.saveStory(commitMessage);
             });
+          };
+
+          $scope.publishStory = function() {
+            StoryEditorStateService.changeStoryPublicationStatus(
+              true, function() {
+                $scope.storyIsPublished =
+                  StoryEditorStateService.isStoryPublished();
+              });
+          };
+
+          $scope.unpublishStory = function() {
+            StoryEditorStateService.changeStoryPublicationStatus(
+              false, function() {
+                $scope.storyIsPublished =
+                  StoryEditorStateService.isStoryPublished();
+              });
           };
 
           $scope.$on(EVENT_STORY_INITIALIZED, _validateStory);

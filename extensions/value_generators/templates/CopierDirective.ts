@@ -18,10 +18,9 @@
 
 // TODO(sll): Remove this directive (as well as the whole of the value
 // generators framework).
+require('components/forms/custom-forms-directives/object-editor.directive.ts');
 
-var oppia = require('AppInit.ts').module;
-
-oppia.directive('copier', ['$compile', function($compile) {
+angular.module('oppia').directive('copier', ['$compile', function($compile) {
   return {
     link: function(scope: ICustomScope, element) {
       scope.getTemplateUrl = function() {

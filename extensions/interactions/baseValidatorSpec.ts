@@ -24,6 +24,19 @@
  * tests to ensure it is working properly.
  */
 
+// TODO(#7222): Remove the following block of unnnecessary imports once
+// interaction validators is upgraded to Angular 8.
+import { AnswerGroupObjectFactory } from
+  'domain/exploration/AnswerGroupObjectFactory';
+import { baseInteractionValidationService } from
+  'interactions/baseInteractionValidationService';
+import { OutcomeObjectFactory } from
+  'domain/exploration/OutcomeObjectFactory';
+import { RuleObjectFactory } from 'domain/exploration/RuleObjectFactory';
+import { SubtitledHtmlObjectFactory } from
+  'domain/exploration/SubtitledHtmlObjectFactory';
+// ^^^ This block is to be removed.
+
 describe('Interaction validator', function() {
   var scope, filter, bivs, WARNING_TYPES, agof;
 
@@ -34,6 +47,21 @@ describe('Interaction validator', function() {
   beforeEach(function() {
     angular.mock.module('oppia');
   });
+  beforeEach(angular.mock.module('oppia', function($provide) {
+    $provide.value(
+      'AnswerGroupObjectFactory', new AnswerGroupObjectFactory(
+        new OutcomeObjectFactory(new SubtitledHtmlObjectFactory()),
+        new RuleObjectFactory()));
+    $provide.value(
+      'baseInteractionValidationService',
+      new baseInteractionValidationService());
+    $provide.value(
+      'OutcomeObjectFactory', new OutcomeObjectFactory(
+        new SubtitledHtmlObjectFactory()));
+    $provide.value('RuleObjectFactory', new RuleObjectFactory());
+    $provide.value(
+      'SubtitledHtmlObjectFactory', new SubtitledHtmlObjectFactory());
+  }));
 
   beforeEach(angular.mock.inject(function($injector, $rootScope) {
     scope = $rootScope.$new();

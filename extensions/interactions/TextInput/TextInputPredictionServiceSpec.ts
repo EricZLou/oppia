@@ -16,11 +16,27 @@
  * @fileoverview Unit tests text input prediction service.
  */
 
+// TODO(#7222): Remove the following block of unnnecessary imports once
+// TextInputPredictionService.ts is upgraded to Angular 8.
+import { CountVectorizerService } from 'classifiers/CountVectorizerService';
+import { PredictionResultObjectFactory } from
+  'domain/classifier/PredictionResultObjectFactory';
+import { SVMPredictionService } from 'classifiers/SVMPredictionService';
+// ^^^ This block is to be removed.
+
 describe('Text Input Prediction Service', function() {
   var $rootScope = null;
   var $scope = null;
 
   beforeEach(angular.mock.module('oppia'));
+  beforeEach(angular.mock.module('oppia', function($provide) {
+    $provide.value('CountVectorizerService', new CountVectorizerService());
+    $provide.value(
+      'PredictionResultObjectFactory', new PredictionResultObjectFactory());
+    $provide.value(
+      'SVMPredictionService', new SVMPredictionService(
+        new PredictionResultObjectFactory()));
+  }));
 
   describe('Test text prediction service', function() {
     var predictionService;

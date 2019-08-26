@@ -16,9 +16,28 @@
  * @fileoverview Unit tests code repl prediction service.
  */
 
+// TODO(#7222): Remove the following block of unnnecessary imports once
+// CodeReplPredictionService.ts is upgraded to Angular 8.
+import { CountVectorizerService } from 'classifiers/CountVectorizerService';
+import { PredictionResultObjectFactory } from
+  'domain/classifier/PredictionResultObjectFactory';
+import { SVMPredictionService } from 'classifiers/SVMPredictionService';
+import { WinnowingPreprocessingService } from
+  'classifiers/WinnowingPreprocessingService';
+// ^^^ This block is to be removed.
+
 describe('CodeRepl prediction service', function() {
   beforeEach(angular.mock.module('oppia'));
-
+  beforeEach(angular.mock.module('oppia', function($provide) {
+    $provide.value('CountVectorizerService', new CountVectorizerService());
+    $provide.value(
+      'PredictionResultObjectFactory', new PredictionResultObjectFactory());
+    $provide.value(
+      'SVMPredictionService', new SVMPredictionService(
+        new PredictionResultObjectFactory()));
+    $provide.value(
+      'WinnowingPreprocessingService', new WinnowingPreprocessingService());
+  }));
   describe('CodeRepl prediction service test', function() {
     var service, tokenizer;
     beforeEach(angular.mock.inject(function($injector) {
