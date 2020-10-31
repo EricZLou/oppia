@@ -25,8 +25,6 @@ import re
 
 from constants import constants
 from core.domain import base_model_validators
-from core.domain import classifier_domain
-from core.domain import classifier_services
 from core.domain import collection_domain
 from core.domain import collection_services
 from core.domain import config_domain
